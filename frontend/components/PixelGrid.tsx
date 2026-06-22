@@ -12,9 +12,10 @@ interface Props {
   selection: Selection | null;
   onSelect: (s: Selection | null) => void;
   onRegion?: (name: string | null) => void;
+  selectable?: boolean;
 }
 
-export default function PixelGrid({ pixels, selection, onSelect, onRegion }: Props) {
+export default function PixelGrid({ pixels, selection, onSelect, onRegion, selectable = true }: Props) {
   const divRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
   const [startCell, setStartCell] = useState<{ x: number; y: number } | null>(null);
@@ -33,6 +34,7 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion }: Pro
   }, []);
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (!selectable) return;
     e.preventDefault();
     const cell = getCellFromEvent(e);
     if (!cell) return;
@@ -60,7 +62,7 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion }: Pro
   return (
     <div
       ref={divRef}
-      className="relative select-none cursor-crosshair"
+      className={`relative select-none ${selectable ? "cursor-crosshair" : "cursor-grab active:cursor-grabbing"}`}
       style={{ width: GRID_SIZE, height: GRID_SIZE, background: "#0f172a" }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}

@@ -30,6 +30,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const [view, setView] = useState<"landing" | "grid">("landing");
+  const [mode, setMode] = useState<"pan" | "select">("pan");
   const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,8 +56,25 @@ export default function Home() {
             <div className="w-6 h-6 rounded bg-indigo-600 flex items-center justify-center text-xs font-bold">P</div>
             <span className="font-bold text-sm">Piksel Duvarı</span>
           </div>
-          <div className="text-xs text-gray-500">
-            {hoveredRegion ? <span className="text-indigo-400 font-medium">📍 {hoveredRegion}</span> : "Alan seçmek için sürükle"}
+
+          {/* Mod toggle */}
+          <div className="flex items-center bg-gray-800 rounded-lg p-0.5 gap-0.5">
+            <button
+              onClick={() => { setMode("pan"); setSelection(null); }}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${mode === "pan" ? "bg-gray-600 text-white" : "text-gray-400 hover:text-white"}`}
+            >
+              ✋ Hareket Et
+            </button>
+            <button
+              onClick={() => setMode("select")}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${mode === "select" ? "bg-indigo-600 text-white" : "text-gray-400 hover:text-white"}`}
+            >
+              ⬛ Alan Seç
+            </button>
+          </div>
+
+          <div className="text-xs text-gray-500 hidden sm:block">
+            {hoveredRegion ? <span className="text-indigo-400 font-medium">📍 {hoveredRegion}</span> : mode === "select" ? "Sürükle → alan seç" : "Kaydır veya sürükle → hareket et"}
           </div>
         </header>
 
@@ -78,14 +96,26 @@ export default function Home() {
                 <span className="text-sm">Yükleniyor...</span>
               </div>
             ) : (
-              <TransformWrapper minScale={0.1} maxScale={15} initialScale={0.5} centerOnInit>
+              <TransformWrapper
+                minScale={0.1}
+                maxScale={15}
+                initialScale={0.5}
+                centerOnInit
+                panning={{ disabled: mode === "select" }}
+              >
                 <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }} contentStyle={{ width: 1000, height: 1000 }}>
-                  <PixelGrid pixels={pixels} selection={selection} onSelect={setSelection} onRegion={setHoveredRegion} />
+                  <PixelGrid
+                    pixels={pixels}
+                    selection={selection}
+                    onSelect={mode === "select" ? setSelection : () => {}}
+                    onRegion={setHoveredRegion}
+                    selectable={mode === "select"}
+                  />
                 </TransformComponent>
               </TransformWrapper>
             )}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm text-gray-400 text-xs px-4 py-2 rounded-full border border-gray-700 pointer-events-none">
-              Kaydır · Zoom için tekerlek · Alan seçmek için sürükle
+              {mode === "pan" ? "✋ Hareket modu — üstten «Alan Seç» e geç" : "⬛ Seçim modu — sürükle veya tıkla"}
             </div>
           </div>
           {selection && <SelectionPanel selection={selection} onClose={() => setSelection(null)} />}
