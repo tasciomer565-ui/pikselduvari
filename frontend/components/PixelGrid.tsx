@@ -61,43 +61,82 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion }: Pro
     <div
       ref={divRef}
       className="relative select-none cursor-crosshair"
-      style={{ width: GRID_SIZE, height: GRID_SIZE, background: "#060b14" }}
+      style={{ width: GRID_SIZE, height: GRID_SIZE, background: "#0f172a" }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Bölge renk katmanı */}
+      {/* 1. Bölge renk katmanı (alt) */}
       {REGIONS.map((r) => (
         <div
           key={r.id}
           className="absolute pointer-events-none"
           style={{
             left: r.x, top: r.y, width: r.w, height: r.h,
-            background: r.color,
-            opacity: 0.55,
+            backgroundColor: r.color,
+            opacity: 0.7,
             zIndex: 1,
           }}
         />
       ))}
 
-      {/* Bölge etiketleri */}
+      {/* 2. Bölge sınır çizgileri (SVG) */}
+      <svg
+        className="absolute inset-0 pointer-events-none"
+        width={GRID_SIZE}
+        height={GRID_SIZE}
+        style={{ zIndex: 2 }}
+      >
+        {/* 50px'de bir belirgin çizgi (5 blok = 1 süper blok) */}
+        {Array.from({ length: GRID_SIZE / 50 + 1 }, (_, i) => i * 50).map((pos) => (
+          <g key={pos}>
+            <line x1={pos} y1={0} x2={pos} y2={GRID_SIZE} stroke="rgba(255,255,255,0.12)" strokeWidth="0.5" />
+            <line x1={0} y1={pos} x2={GRID_SIZE} y2={pos} stroke="rgba(255,255,255,0.12)" strokeWidth="0.5" />
+          </g>
+        ))}
+        {/* 100px'de bir kalın çizgi */}
+        {Array.from({ length: GRID_SIZE / 100 + 1 }, (_, i) => i * 100).map((pos) => (
+          <g key={`big-${pos}`}>
+            <line x1={pos} y1={0} x2={pos} y2={GRID_SIZE} stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+            <line x1={0} y1={pos} x2={GRID_SIZE} y2={pos} stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+          </g>
+        ))}
+        {/* Bölge sınırları */}
+        {REGIONS.map((r) => (
+          <rect
+            key={`border-${r.id}`}
+            x={r.x + 0.5} y={r.y + 0.5} width={r.w - 1} height={r.h - 1}
+            fill="none"
+            stroke="rgba(255,255,255,0.45)"
+            strokeWidth="2"
+          />
+        ))}
+      </svg>
+
+      {/* 3. Bölge etiketleri */}
       {REGIONS.map((r) => (
         <div
           key={`label-${r.id}`}
-          className="absolute pointer-events-none flex flex-col items-center justify-center text-center"
+          className="absolute pointer-events-none flex flex-col items-center justify-center text-center px-1"
           style={{ left: r.x, top: r.y, width: r.w, height: r.h, zIndex: 3 }}
         >
           <span
-            className="font-bold text-white drop-shadow-lg leading-tight"
-            style={{ fontSize: Math.max(8, Math.min(16, r.w / 8, r.h / 5)) }}
+            className="font-bold text-white leading-tight drop-shadow"
+            style={{
+              fontSize: Math.max(9, Math.min(18, r.w / 9, r.h / 5)),
+              textShadow: "0 1px 4px rgba(0,0,0,0.8)",
+            }}
           >
             {r.name}
           </span>
-          {r.w >= 150 && r.h >= 120 && (
+          {r.w >= 160 && r.h >= 120 && (
             <span
-              className="text-white/60 leading-tight mt-0.5"
-              style={{ fontSize: Math.max(6, Math.min(9, r.w / 14)) }}
+              className="text-white/70 leading-tight mt-0.5"
+              style={{
+                fontSize: Math.max(6, Math.min(10, r.w / 16)),
+                textShadow: "0 1px 3px rgba(0,0,0,0.9)",
+              }}
             >
               {r.subtitle}
             </span>
@@ -105,32 +144,7 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion }: Pro
         </div>
       ))}
 
-      {/* Bölge sınırları */}
-      <svg
-        className="absolute inset-0 pointer-events-none"
-        width={GRID_SIZE}
-        height={GRID_SIZE}
-        style={{ zIndex: 4 }}
-      >
-        {REGIONS.map((r) => (
-          <rect
-            key={`border-${r.id}`}
-            x={r.x} y={r.y} width={r.w} height={r.h}
-            fill="none"
-            stroke="rgba(255,255,255,0.15)"
-            strokeWidth="1.5"
-          />
-        ))}
-        {/* İnce ızgara çizgileri */}
-        <defs>
-          <pattern id="blockGrid" width={BLOCK * 5} height={BLOCK * 5} patternUnits="userSpaceOnUse">
-            <path d={`M ${BLOCK * 5} 0 L 0 0 0 ${BLOCK * 5}`} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#blockGrid)" />
-      </svg>
-
-      {/* Satılmış pikseller */}
+      {/* 4. Satılmış pikseller */}
       {pixels.map((p) => (
         <a
           key={p.id}
@@ -138,8 +152,8 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion }: Pro
           target="_blank"
           rel="noopener noreferrer"
           title={p.tooltip}
-          className="absolute block overflow-hidden transition-opacity hover:opacity-80"
-          style={{ left: p.x, top: p.y, width: p.width, height: p.height, zIndex: 6 }}
+          className="absolute block overflow-hidden hover:opacity-80 transition-opacity"
+          style={{ left: p.x, top: p.y, width: p.width, height: p.height, zIndex: 5 }}
           onMouseDown={(e) => e.stopPropagation()}
         >
           {p.image_url ? (
@@ -151,31 +165,60 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion }: Pro
         </a>
       ))}
 
-      {/* Hover highlight */}
+      {/* 5. Hover highlight */}
       {hovered && !dragging && (
         <div
-          className="absolute pointer-events-none border border-white/50 bg-white/10"
-          style={{ left: hovered.x, top: hovered.y, width: BLOCK, height: BLOCK, zIndex: 10 }}
+          className="absolute pointer-events-none"
+          style={{
+            left: hovered.x, top: hovered.y, width: BLOCK, height: BLOCK,
+            border: "1.5px solid rgba(255,255,255,0.7)",
+            background: "rgba(255,255,255,0.15)",
+            zIndex: 10,
+          }}
         />
       )}
 
-      {/* Seçim */}
+      {/* 6. Seçim */}
       {selection && (
         <div
-          className="absolute pointer-events-none border-2 border-yellow-400"
+          className="absolute pointer-events-none"
           style={{
             left: selection.x, top: selection.y,
             width: selection.width, height: selection.height,
-            background: "rgba(250,204,21,0.15)",
+            border: "2.5px solid #facc15",
+            background: "rgba(250,204,21,0.18)",
             zIndex: 15,
           }}
         >
+          {/* Etiket */}
           <div
-            className="absolute bg-yellow-400 text-black text-xs px-2 py-0.5 rounded font-bold whitespace-nowrap shadow-lg"
-            style={{ top: -22, left: 0 }}
+            style={{
+              position: "absolute",
+              top: selection.y > 25 ? -24 : 4,
+              left: 0,
+              background: "#facc15",
+              color: "#000",
+              fontSize: 11,
+              fontWeight: 700,
+              padding: "2px 6px",
+              borderRadius: 4,
+              whiteSpace: "nowrap",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.5)",
+            }}
           >
             {selection.width}×{selection.height} · {(selection.width * selection.height).toLocaleString("tr-TR")} ₺
           </div>
+          {/* Köşe tutucuları */}
+          {[
+            { top: -3, left: -3 }, { top: -3, right: -3 },
+            { bottom: -3, left: -3 }, { bottom: -3, right: -3 },
+          ].map((pos, i) => (
+            <div
+              key={i}
+              className="absolute w-2 h-2 bg-yellow-400 rounded-sm"
+              style={pos}
+            />
+          ))}
         </div>
       )}
     </div>
