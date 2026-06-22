@@ -1,8 +1,9 @@
 "use client";
 
 import { Selection } from "@/app/page";
-import { X, ShoppingCart, Info } from "lucide-react";
+import { X, ShoppingCart, Info, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { getRegionAt } from "@/lib/regions";
 
 interface Props {
   selection: Selection;
@@ -16,6 +17,7 @@ export default function SelectionPanel({ selection, onClose }: Props) {
   const pixels = selection.width * selection.height;
   const price = pixels * PIXEL_PRICE;
   const blocks = (selection.width / 10) * (selection.height / 10);
+  const region = getRegionAt(selection.x, selection.y);
 
   const handleBuy = () => {
     const params = new URLSearchParams({
@@ -42,6 +44,12 @@ export default function SelectionPanel({ selection, onClose }: Props) {
       {/* Önizleme */}
       <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 overflow-hidden">
         <div className="p-4 space-y-2.5 text-sm">
+          {region && (
+            <div className="flex items-center gap-2 text-indigo-300 bg-indigo-950/50 rounded-lg px-2 py-1.5 mb-1">
+              <MapPin size={12} />
+              <span className="font-semibold text-xs">{region.name}</span>
+            </div>
+          )}
           <div className="flex justify-between text-gray-400">
             <span>Konum</span>
             <span className="text-white font-mono text-xs">({selection.x}, {selection.y})</span>

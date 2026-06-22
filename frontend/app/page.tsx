@@ -31,6 +31,7 @@ export default function Home() {
   const [selection, setSelection] = useState<Selection | null>(null);
   const [loading, setLoading] = useState(true);
   const [showHero, setShowHero] = useState(true);
+  const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`/api/pixels`)
@@ -136,15 +137,22 @@ export default function Home() {
                 wrapperStyle={{ width: "100%", height: "100%" }}
                 contentStyle={{ width: 1000, height: 1000 }}
               >
-                <PixelGrid pixels={pixels} selection={selection} onSelect={setSelection} />
+                <PixelGrid pixels={pixels} selection={selection} onSelect={setSelection} onRegion={setHoveredRegion} />
               </TransformComponent>
             </TransformWrapper>
           )}
 
-          {/* Zoom hint */}
+          {/* Alt bilgi */}
           {!loading && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-gray-900/80 backdrop-blur-sm border border-gray-700/50 rounded-full px-4 py-2 text-xs text-gray-400 pointer-events-none">
-              Kaydır • Yakınlaştır • Alan seçmek için sürükle
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 pointer-events-none">
+              {hoveredRegion && (
+                <div className="bg-black/80 backdrop-blur-sm border border-white/10 rounded-full px-4 py-2 text-xs text-white font-semibold">
+                  📍 {hoveredRegion}
+                </div>
+              )}
+              <div className="bg-gray-900/80 backdrop-blur-sm border border-gray-700/50 rounded-full px-4 py-2 text-xs text-gray-400">
+                Kaydır • Yakınlaştır • Alan seçmek için sürükle
+              </div>
             </div>
           )}
         </div>
