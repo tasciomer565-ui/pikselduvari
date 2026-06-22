@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState } from "react";
 import { Pixel, Selection } from "@/app/page";
 
 const GRID_SIZE = 1000;
@@ -13,16 +13,15 @@ interface Props {
 }
 
 export default function PixelGrid({ pixels, selection, onSelect }: Props) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [dragging, setDragging] = useState(false);
   const [startCell, setStartCell] = useState<{ x: number; y: number } | null>(null);
+  const [hovered, setHovered] = useState<{ x: number; y: number } | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const getCellFromEvent = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const rawX = e.clientX - rect.left;
-    const rawY = e.clientY - rect.top;
-    const cellX = Math.floor(rawX / BLOCK) * BLOCK;
-    const cellY = Math.floor(rawY / BLOCK) * BLOCK;
+    const cellX = Math.floor((e.clientX - rect.left) / BLOCK) * BLOCK;
+    const cellY = Math.floor((e.clientY - rect.top) / BLOCK) * BLOCK;
     return { x: cellX, y: cellY };
   };
 
@@ -34,8 +33,9 @@ export default function PixelGrid({ pixels, selection, onSelect }: Props) {
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!dragging || !startCell) return;
     const cell = getCellFromEvent(e);
+    setHovered(cell);
+    if (!dragging || !startCell) return;
     const x = Math.min(startCell.x, cell.x);
     const y = Math.min(startCell.y, cell.y);
     const width = Math.max(startCell.x, cell.x) - x + BLOCK;
@@ -44,28 +44,21 @@ export default function PixelGrid({ pixels, selection, onSelect }: Props) {
   };
 
   const handleMouseUp = () => setDragging(false);
-
-  // Build occupied set for fast lookup
-  const occupiedBlocks = new Set<string>();
-  pixels.forEach((p) => {
-    for (let bx = p.x; bx < p.x + p.width; bx += BLOCK) {
-      for (let by = p.y; by < p.y + p.height; by += BLOCK) {
-        occupiedBlocks.add(`${bx},${by}`);
-      }
-    }
-  });
-
-  const isOccupied = (x: number, y: number) => occupiedBlocks.has(`${x},${y}`);
-  const isSelected = (x: number, y: number) =>
-    selection
-      ? x >= selection.x && x < selection.x + selection.width && y >= selection.y && y < selection.y + selection.height
-      : false;
-
-  const cells = GRID_SIZE / BLOCK;
+  const handleMouseLeave = () => { setDragging(false); setHovered(null); };
 
   return (
-    <div className="relative" style={{ width: GRID_SIZE, height: GRID_SIZE }}>
-      {/* Sold pixels with images/colors */}
+    <div className="relative" style={{ width: GRID_SIZE, height: GRID_SIZE, background: "#030712" }}>
+      {/* Grid lines */}
+      <svg className="absolute inset-0 pointer-events-none z-0" width={GRID_SIZE} height={GRID_SIZE}>
+        <defs>
+          <pattern id="grid" width={BLOCK} height={BLOCK} patternUnits="userSpaceOnUse">
+            <path d={`M ${BLOCK} 0 L 0 0 0 ${BLOCK}`} fill="none" stroke="#1f2937" strokeWidth="0.5" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid)" />
+      </svg>
+
+      {/* Satılmış pikseller */}
       {pixels.map((p) => (
         <a
           key={p.id}
@@ -73,61 +66,50 @@ export default function PixelGrid({ pixels, selection, onSelect }: Props) {
           target="_blank"
           rel="noopener noreferrer"
           title={p.tooltip}
-          className="absolute block overflow-hidden border border-gray-700"
+          className="pixel-block absolute block overflow-hidden border border-indigo-900/30 hover:border-indigo-400/60 hover:z-10"
           style={{ left: p.x, top: p.y, width: p.width, height: p.height }}
         >
           {p.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={`${process.env.NEXT_PUBLIC_API_URL}${p.image_url}`}
-              alt={p.tooltip}
-              className="w-full h-full object-cover"
-            />
+            <img src={p.image_url} alt={p.tooltip} className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full bg-indigo-900 opacity-80" />
+            <div className="w-full h-full bg-gradient-to-br from-indigo-900 to-indigo-700 opacity-80" />
           )}
         </a>
       ))}
 
-      {/* Selection overlay */}
-      {selection && (
+      {/* Hover highlight */}
+      {hovered && !dragging && (
         <div
-          className="absolute border-2 border-yellow-400 bg-yellow-400/20 pointer-events-none z-10"
-          style={{
-            left: selection.x,
-            top: selection.y,
-            width: selection.width,
-            height: selection.height,
-          }}
+          className="absolute pointer-events-none z-10 border border-indigo-400/40 bg-indigo-400/10"
+          style={{ left: hovered.x, top: hovered.y, width: BLOCK, height: BLOCK }}
         />
       )}
 
-      {/* Invisible interaction canvas */}
+      {/* Seçim */}
+      {selection && (
+        <div
+          className="absolute pointer-events-none z-20 border-2 border-yellow-400 bg-yellow-400/10"
+          style={{ left: selection.x, top: selection.y, width: selection.width, height: selection.height }}
+        >
+          <div className="absolute -top-5 left-0 bg-yellow-400 text-black text-xs px-1.5 py-0.5 rounded font-mono whitespace-nowrap">
+            {selection.width}×{selection.height}
+          </div>
+        </div>
+      )}
+
+      {/* Interaction canvas */}
       <canvas
         ref={canvasRef}
         width={GRID_SIZE}
         height={GRID_SIZE}
-        className="absolute inset-0 z-20 cursor-crosshair"
+        className="absolute inset-0 z-30 cursor-crosshair"
         style={{ opacity: 0 }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
       />
-
-      {/* Grid lines */}
-      <svg
-        className="absolute inset-0 pointer-events-none z-0"
-        width={GRID_SIZE}
-        height={GRID_SIZE}
-      >
-        {Array.from({ length: cells + 1 }).map((_, i) => (
-          <g key={i}>
-            <line x1={i * BLOCK} y1={0} x2={i * BLOCK} y2={GRID_SIZE} stroke="#1f2937" strokeWidth={0.5} />
-            <line x1={0} y1={i * BLOCK} x2={GRID_SIZE} y2={i * BLOCK} stroke="#1f2937" strokeWidth={0.5} />
-          </g>
-        ))}
-      </svg>
     </div>
   );
 }
