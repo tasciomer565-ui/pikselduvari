@@ -12,7 +12,7 @@ function OdemeSonuc() {
 
   useEffect(() => {
     if (!token) { setStatus("error"); return; }
-    axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/payment/callback`, { token })
+    axios.post(`/api/payment/callback`, { token })
       .then((r) => { setStatus("success"); setPixelId(r.data.pixel_id); })
       .catch(() => setStatus("error"));
   }, [token]);

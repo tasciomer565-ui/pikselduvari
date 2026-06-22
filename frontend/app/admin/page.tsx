@@ -23,7 +23,7 @@ export default function AdminPage() {
   const [pixels, setPixels] = useState<Pixel[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const API = process.env.NEXT_PUBLIC_API_URL;
+  const API = "";
 
   const login = async () => {
     try {

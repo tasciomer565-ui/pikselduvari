@@ -31,7 +31,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/pixels`)
+    fetch(`/api/pixels`)
       .then((r) => r.json())
       .then((data) => { setPixels(data); setLoading(false); })
       .catch(() => setLoading(false));

@@ -24,7 +24,7 @@ function SatinAlForm() {
     setError("");
 
     try {
-      const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/pixels/reserve`, {
+      const { data } = await axios.post(`/api/pixels/reserve`, {
         x, y, width, height, ...form,
       });
       window.location.href = data.payment_url;
