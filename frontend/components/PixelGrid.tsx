@@ -21,6 +21,9 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
   const [startCell, setStartCell] = useState<{ x: number; y: number } | null>(null);
   const [hovered, setHovered] = useState<{ x: number; y: number } | null>(null);
 
+  // Sağ tık → context menu engelle
+  const handleContextMenu = (e: React.MouseEvent) => e.preventDefault();
+
   const getCellFromEvent = useCallback((e: React.MouseEvent) => {
     if (!divRef.current) return null;
     const rect = divRef.current.getBoundingClientRect();
@@ -68,6 +71,7 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
+      onContextMenu={handleContextMenu}
     >
       {/* 1. Bölge renk katmanı (alt) */}
       {REGIONS.map((r) => (

@@ -30,7 +30,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const [view, setView] = useState<"landing" | "grid">("landing");
-  const [mode, setMode] = useState<"pan" | "select">("pan");
   const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -57,24 +56,11 @@ export default function Home() {
             <span className="font-bold text-sm">Piksel Duvarı</span>
           </div>
 
-          {/* Mod toggle */}
-          <div className="flex items-center bg-gray-800 rounded-lg p-0.5 gap-0.5">
-            <button
-              onClick={() => { setMode("pan"); setSelection(null); }}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${mode === "pan" ? "bg-gray-600 text-white" : "text-gray-400 hover:text-white"}`}
-            >
-              ✋ Hareket Et
-            </button>
-            <button
-              onClick={() => setMode("select")}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${mode === "select" ? "bg-indigo-600 text-white" : "text-gray-400 hover:text-white"}`}
-            >
-              ⬛ Alan Seç
-            </button>
-          </div>
-
           <div className="text-xs text-gray-500 hidden sm:block">
-            {hoveredRegion ? <span className="text-indigo-400 font-medium">📍 {hoveredRegion}</span> : mode === "select" ? "Sürükle → alan seç" : "Kaydır veya sürükle → hareket et"}
+            {hoveredRegion
+              ? <span className="text-indigo-400 font-medium">📍 {hoveredRegion}</span>
+              : <span>Zoom: <kbd className="bg-gray-700 px-1 rounded">scroll</kbd> · Seçim: <kbd className="bg-gray-700 px-1 rounded">sürükle</kbd></span>
+            }
           </div>
         </header>
 
@@ -97,25 +83,36 @@ export default function Home() {
               </div>
             ) : (
               <TransformWrapper
-                minScale={0.1}
+                minScale={0.08}
                 maxScale={15}
                 initialScale={0.5}
                 centerOnInit
-                panning={{ disabled: mode === "select" }}
+                panning={{ disabled: true }}
+                wheel={{ step: 0.08 }}
               >
-                <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }} contentStyle={{ width: 1000, height: 1000 }}>
-                  <PixelGrid
-                    pixels={pixels}
-                    selection={selection}
-                    onSelect={mode === "select" ? setSelection : () => {}}
-                    onRegion={setHoveredRegion}
-                    selectable={mode === "select"}
-                  />
-                </TransformComponent>
+                {({ zoomIn, zoomOut, resetTransform }) => (
+                  <>
+                    {/* Zoom kontrolleri */}
+                    <div className="absolute top-3 right-3 z-50 flex flex-col gap-1">
+                      <button onClick={() => zoomIn()} className="w-8 h-8 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-white font-bold text-lg flex items-center justify-center">+</button>
+                      <button onClick={() => zoomOut()} className="w-8 h-8 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-white font-bold text-lg flex items-center justify-center">−</button>
+                      <button onClick={() => resetTransform()} className="w-8 h-8 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-gray-400 text-xs flex items-center justify-center" title="Sıfırla">↺</button>
+                    </div>
+                    <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }} contentStyle={{ width: 1000, height: 1000 }}>
+                      <PixelGrid
+                        pixels={pixels}
+                        selection={selection}
+                        onSelect={setSelection}
+                        onRegion={setHoveredRegion}
+                        selectable={true}
+                      />
+                    </TransformComponent>
+                  </>
+                )}
               </TransformWrapper>
             )}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm text-gray-400 text-xs px-4 py-2 rounded-full border border-gray-700 pointer-events-none">
-              {mode === "pan" ? "✋ Hareket modu — üstten «Alan Seç» e geç" : "⬛ Seçim modu — sürükle veya tıkla"}
+              Scroll → zoom · Sürükle → alan seç · Sağ tık sürükle → hareket et
             </div>
           </div>
           {selection && <SelectionPanel selection={selection} onClose={() => setSelection(null)} />}
