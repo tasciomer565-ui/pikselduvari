@@ -156,6 +156,86 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
 }
 
 // ─── WhatsApp Chat Widget ─────────────────────────────────────────────────────
+function CampaignBanner() {
+  const CAMPAIGN_LIMIT = 50;
+  const [remaining, setRemaining] = useState(43);
+  const pct = Math.round(((CAMPAIGN_LIMIT - remaining) / CAMPAIGN_LIMIT) * 100);
+  return (
+    <div className="w-full max-w-xl mx-auto mb-6 bg-gradient-to-r from-orange-950/60 to-red-950/60 border border-orange-500/30 rounded-2xl px-5 py-4">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className="text-orange-400 text-lg">🔥</span>
+          <span className="text-white font-bold text-sm">İlk 50 Alana %20 İndirim</span>
+          <span className="bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">CANLI</span>
+        </div>
+        <span className="text-orange-300 font-bold text-sm">{remaining} alan kaldı</span>
+      </div>
+      <div className="w-full bg-gray-800 rounded-full h-2 mb-2">
+        <div
+          className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full transition-all"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <p className="text-gray-400 text-xs text-center">Kampanya bittiğinde normal fiyata döner · Kod otomatik uygulanır</p>
+    </div>
+  );
+}
+
+function EmailCapture() {
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setLoading(true);
+    await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, subject: "Erken Erişim Kaydı", message: `Erken erişim: ${email}` }),
+    });
+    setSent(true);
+    setLoading(false);
+  };
+
+  return (
+    <section className="px-6 py-12">
+      <div className="max-w-2xl mx-auto bg-gradient-to-br from-gray-900 to-indigo-950/40 border border-indigo-800/30 rounded-3xl p-8 text-center">
+        <div className="text-4xl mb-3">🎁</div>
+        <h3 className="text-2xl font-bold mb-2">Ücretsiz 10×10 Alan Kazan</h3>
+        <p className="text-gray-400 text-sm mb-6">
+          E-posta listemize katıl, PayTR entegrasyonu aktif olduğunda <strong className="text-white">100₺ değerinde ücretsiz alan</strong> sana özel gönderilsin.
+        </p>
+        {sent ? (
+          <div className="bg-green-900/30 border border-green-700/40 rounded-xl px-6 py-4">
+            <p className="text-green-400 font-semibold">✅ Kaydedildi! Ödeme aktif olduğunda seni haberdar edeceğiz.</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="email@örnek.com"
+              className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-indigo-500"
+            />
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 transition px-6 py-3 rounded-xl font-semibold text-sm whitespace-nowrap"
+            >
+              {loading ? "..." : "Ücretsiz Alanımı Al 🎯"}
+            </button>
+          </form>
+        )}
+        <p className="text-gray-600 text-xs mt-3">Spam yok. İstediğin zaman çıkabilirsin.</p>
+      </div>
+    </section>
+  );
+}
+
 function SponsorBanner() {
   const [visible, setVisible] = useState(true);
   const waMsg = encodeURIComponent("Merhaba! Piksel Duvarı'nda sponsorlu reklam alanı almak istiyorum. Fiyat bilgisi alabilir miyim?");
@@ -1087,6 +1167,9 @@ export default function Home() {
             Türkiye genelinde şehrinizi temsil eden alanda yerinizi alın.
           </p>
 
+          {/* Kampanya banner */}
+          <CampaignBanner />
+
           {/* CTAs */}
           <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
             <button
@@ -1274,6 +1357,9 @@ export default function Home() {
       </section>
 
       <PartnerLogos />
+
+      {/* Email toplama */}
+      <EmailCapture />
 
       {/* Final CTA */}
       <section className="px-6 py-20 text-center">
