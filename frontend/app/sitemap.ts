@@ -1,6 +1,8 @@
 import { MetadataRoute } from "next";
 import { posts } from "./haberler/posts";
 
+const sehirSlugs = ["istanbul", "ankara", "izmir", "antalya", "bursa", "gaziantep", "konya", "adana"];
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = "https://pikselduvari.com";
   const now = new Date();
@@ -28,5 +30,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...blogPages];
+  const sehirPages: MetadataRoute.Sitemap = sehirSlugs.map((s) => ({
+    url: `${base}/sehir/${s}`,
+    lastModified: now,
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }));
+
+  return [...staticPages, ...blogPages, ...sehirPages];
 }
