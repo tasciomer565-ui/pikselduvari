@@ -1456,6 +1456,8 @@ export default function Home() {
                   <a href="/referans" className="block text-gray-400 hover:text-white transition text-xs">Referans Programı</a>
                   <a href="/hakkimizda" className="block text-gray-400 hover:text-white transition text-xs">Hakkımızda</a>
                   <a href="/haberler" className="block text-gray-400 hover:text-white transition text-xs">Haberler</a>
+                  <a href="/sehirler" className="block text-gray-400 hover:text-white transition text-xs">Tüm Şehirler</a>
+                  <a href="/basin" className="block text-gray-400 hover:text-white transition text-xs">Basın Odası</a>
                   <a href="/iletisim" className="block text-gray-400 hover:text-white transition text-xs">İletişim</a>
                 </div>
               </div>

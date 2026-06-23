@@ -1,7 +1,6 @@
 import { MetadataRoute } from "next";
 import { posts } from "./haberler/posts";
-
-const sehirSlugs = ["istanbul", "ankara", "izmir", "antalya", "bursa", "gaziantep", "konya", "adana"];
+import { sehirler } from "./sehir/sehirler";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = "https://pikselduvari.com";
@@ -12,11 +11,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/satin-al`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     { url: `${base}/nasil-calisir`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/fiyatlandirma`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${base}/sss`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${base}/sss`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/haberler`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${base}/referans`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${base}/sehirler`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${base}/referans`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${base}/hakkimizda`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${base}/basin`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/basari-hikayeleri`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${base}/hakkimizda`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/iletisim`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/kvkk`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
     { url: `${base}/kullanim-sartlari`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
@@ -30,11 +31,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  const sehirPages: MetadataRoute.Sitemap = sehirSlugs.map((s) => ({
-    url: `${base}/sehir/${s}`,
+  const sehirPages: MetadataRoute.Sitemap = sehirler.map((s) => ({
+    url: `${base}/sehir/${s.slug}`,
     lastModified: now,
     changeFrequency: "monthly" as const,
-    priority: 0.8,
+    priority: 0.75,
   }));
 
   return [...staticPages, ...blogPages, ...sehirPages];
