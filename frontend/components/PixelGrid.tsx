@@ -210,9 +210,25 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
         >
           {p.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={p.image_url} alt={p.tooltip} className="w-full h-full object-cover" />
+            <img src={p.image_url} alt={p.tooltip} className="w-full h-full object-cover" loading="lazy" />
           ) : (
-            <div className="w-full h-full bg-white/90 border border-white/30" />
+            <div
+              className="w-full h-full flex items-center justify-center relative overflow-hidden"
+              style={{
+                background: `${getRegionAt(p.x, p.y)?.color ?? "#6366f1"}cc`,
+                borderTop: `2px solid rgba(255,255,255,0.3)`,
+                borderLeft: `2px solid rgba(255,255,255,0.3)`,
+              }}
+            >
+              {/* Parıltı efekti */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
+              {p.width >= 50 && (
+                <span className="text-white/80 font-bold text-center px-1 leading-tight drop-shadow z-10"
+                  style={{ fontSize: Math.max(7, Math.min(14, p.width / 10)) }}>
+                  {p.owner_name}
+                </span>
+              )}
+            </div>
           )}
         </a>
       ))}
