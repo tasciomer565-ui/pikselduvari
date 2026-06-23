@@ -58,6 +58,15 @@ export default function SelectionPanel({ selection, onClose, onPreset }: Props) 
 
   return (
     <div className="w-72 border-l border-gray-800/60 bg-gray-900/95 backdrop-blur-sm p-5 flex flex-col gap-4 overflow-y-auto">
+      {/* Klavye kısayolları */}
+      <div className="bg-gray-800/40 rounded-lg px-3 py-2 text-xs text-gray-500 space-y-1">
+        <div className="flex justify-between"><span>↑ ↓ ← →</span><span>Seçimi kaydır</span></div>
+        <div className="flex justify-between"><span>Shift + ok</span><span>5× hızlı kaydır</span></div>
+        <div className="flex justify-between"><span>+ / −</span><span>Boyutu değiştir</span></div>
+        <div className="flex justify-between"><span>Enter</span><span>Satın al</span></div>
+        <div className="flex justify-between"><span>ESC</span><span>Seçimi sil</span></div>
+      </div>
+
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-white flex items-center gap-2">
           <ShoppingCart size={16} className="text-indigo-400" />

@@ -683,12 +683,49 @@ export default function Home() {
   // Grid keyboard shortcuts
   useEffect(() => {
     if (view !== "grid") return;
+    const BLOCK = 10;
+    const GRID = 1000;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") { setSelection(null); return; }
       if ((e.ctrlKey || e.metaKey) && e.key === "z") { e.preventDefault(); setSelection(null); return; }
       if (e.key === "Enter" && selection) {
         const params = new URLSearchParams({ x: String(selection.x), y: String(selection.y), w: String(selection.width), h: String(selection.height) });
         window.location.href = `/satin-al?${params}`;
+        return;
+      }
+      // Yön tuşları ile seçimi kaydır
+      if (selection && ["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) {
+        e.preventDefault();
+        const step = e.shiftKey ? BLOCK * 5 : BLOCK; // Shift ile 5x hızlı
+        setSelection(prev => {
+          if (!prev) return prev;
+          let nx = prev.x, ny = prev.y;
+          if (e.key === "ArrowLeft")  nx = Math.max(0, prev.x - step);
+          if (e.key === "ArrowRight") nx = Math.min(GRID - prev.width, prev.x + step);
+          if (e.key === "ArrowUp")    ny = Math.max(0, prev.y - step);
+          if (e.key === "ArrowDown")  ny = Math.min(GRID - prev.height, prev.y + step);
+          return { ...prev, x: nx, y: ny };
+        });
+        return;
+      }
+      // + / - ile seçim boyutunu değiştir
+      if (selection && (e.key === "+" || e.key === "=")) {
+        e.preventDefault();
+        setSelection(prev => prev ? {
+          ...prev,
+          width:  Math.min(GRID - prev.x, prev.width + BLOCK),
+          height: Math.min(GRID - prev.y, prev.height + BLOCK),
+        } : prev);
+        return;
+      }
+      if (selection && e.key === "-") {
+        e.preventDefault();
+        setSelection(prev => prev ? {
+          ...prev,
+          width:  Math.max(BLOCK, prev.width - BLOCK),
+          height: Math.max(BLOCK, prev.height - BLOCK),
+        } : prev);
+        return;
       }
     };
     window.addEventListener("keydown", handler);
@@ -820,7 +857,7 @@ export default function Home() {
                 initialScale={0.5}
                 centerOnInit
                 panning={{ disabled: true }}
-                wheel={{ step: 0.03 }}
+                wheel={{ step: 0.015, activationKeys: [] }}
                 onTransform={(ref) => {
                   const { positionX, positionY, scale } = ref.state;
                   const containerW = window.innerWidth;
