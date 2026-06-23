@@ -736,6 +736,13 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const [view, setView] = useState<"landing" | "grid">("landing");
+
+  const goToGrid = () => {
+    if (typeof window !== "undefined" && window.gtag) {
+      window.gtag("event", "click_haritayi_ac", { event_category: "conversion" });
+    }
+    setView("grid");
+  };
   const [liveCount, setLiveCount] = useState(0);
   const [selectedRegion, setSelectedRegion] = useState<string>("");
   const [panTarget, setPanTarget] = useState<string | null>(null);
@@ -1107,7 +1114,7 @@ export default function Home() {
           <a href="/nasil-calisir" className="text-gray-400 hover:text-white text-sm transition hidden sm:block">Nasıl Çalışır?</a>
           <a href="/sss" className="text-gray-400 hover:text-white text-sm transition hidden sm:block">SSS</a>
           <a href="/istatistikler" className="text-gray-400 hover:text-white text-sm transition hidden sm:block">İstatistikler</a>
-          <button onClick={() => setView("grid")} className="bg-indigo-600 hover:bg-indigo-500 transition px-4 py-2 rounded-lg text-sm font-semibold">
+          <button onClick={goToGrid} className="bg-indigo-600 hover:bg-indigo-500 transition px-4 py-2 rounded-lg text-sm font-semibold">
             Alan Satın Al
           </button>
         </div>
@@ -1188,7 +1195,7 @@ export default function Home() {
           {/* CTAs */}
           <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
             <button
-              onClick={() => setView("grid")}
+              onClick={goToGrid}
               className="bg-indigo-600 hover:bg-indigo-500 transition px-8 py-4 rounded-xl font-bold text-lg flex items-center gap-2 hover:scale-105 active:scale-95 shadow-lg shadow-indigo-900/40"
             >
               🗺️ Alanını Seç
@@ -1246,7 +1253,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto bg-gray-900 rounded-3xl border border-gray-800 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
             <span className="text-sm text-gray-400">Piksel Duvarı — Canlı Önizleme</span>
-            <button onClick={() => setView("grid")} className="text-indigo-400 hover:text-indigo-300 text-sm transition">
+            <button onClick={goToGrid} className="text-indigo-400 hover:text-indigo-300 text-sm transition">
               Tam ekran aç →
             </button>
           </div>
@@ -1264,7 +1271,7 @@ export default function Home() {
             )}
             <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent to-gray-900/60" />
             <button
-              onClick={() => setView("grid")}
+              onClick={goToGrid}
               className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-indigo-600 hover:bg-indigo-500 transition px-5 py-2.5 rounded-xl text-sm font-semibold"
             >
               Bu alanı seç →
@@ -1331,7 +1338,7 @@ export default function Home() {
           </div>
           <p className="text-gray-600 text-sm mt-6">1 piksel = 1₺ · Kendi boyutunu seç · Sınır yok</p>
           <button
-            onClick={() => setView("grid")}
+            onClick={goToGrid}
             className="mt-8 bg-indigo-600 hover:bg-indigo-500 transition px-8 py-4 rounded-xl font-bold text-lg hover:scale-105 active:scale-95"
           >
             Hemen Alan Seç
@@ -1418,7 +1425,7 @@ export default function Home() {
           <p className="text-gray-400 mb-2">sadece <strong className="text-white">100₺&apos;den</strong> başlıyor</p>
           <p className="text-orange-300 text-sm mb-8">⚠️ Popüler bölgelerde alanlar hızla dolmaktadır</p>
           <button
-            onClick={() => setView("grid")}
+            onClick={goToGrid}
             className="bg-indigo-600 hover:bg-indigo-500 transition px-8 py-4 rounded-xl font-bold text-lg hover:scale-105 active:scale-95"
           >
             🗺️ Haritayı Aç &amp; Alan Seç

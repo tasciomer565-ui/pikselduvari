@@ -79,6 +79,14 @@ export default function SelectionPanel({ selection, onClose, onPreset }: Props) 
   };
 
   const handleBuy = () => {
+    // GA4: checkout başladı
+    if (typeof window !== "undefined" && window.gtag) {
+      window.gtag("event", "begin_checkout", {
+        event_category: "ecommerce",
+        value: finalPrice,
+        currency: "TRY",
+      });
+    }
     const params = new URLSearchParams({
       x: String(selection.x),
       y: String(selection.y),

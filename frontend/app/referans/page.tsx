@@ -1,11 +1,16 @@
-import type { Metadata } from "next";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Referans Programı — Piksel Duvarı",
-  description: "Piksel Duvarı referans programına katılın. Arkadaşınızı davet edin, %10 komisyon kazanın.",
-};
+import { useState } from "react";
 
 export default function ReferansPage() {
+  const [copied, setCopied] = useState(false);
+  const refLink = "https://pikselduvari.com/?ref=SENIN_KODUN";
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(refLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <nav className="border-b border-gray-800/50 px-6 py-4 flex items-center justify-between sticky top-0 bg-gray-950/90 backdrop-blur-md z-50">
@@ -81,6 +86,42 @@ export default function ReferansPage() {
             <li className="flex gap-2"><span className="text-gray-500">•</span> Kendi alımlarınız komisyon programına dahil değildir</li>
             <li className="flex gap-2"><span className="text-gray-500">•</span> Program koşulları önceden bildirimle değiştirilebilir</li>
           </ul>
+        </div>
+
+        {/* Referans linki demo kutusu */}
+        <div className="bg-gray-900 border border-indigo-800/40 rounded-2xl p-6 mb-8">
+          <h2 className="font-bold text-lg mb-1">🔗 Referans Linkiniz Nasıl Görünür?</h2>
+          <p className="text-gray-500 text-sm mb-4">Bize katıldıktan sonra size özel kod içeren link bu şekilde oluşturulur.</p>
+          <div className="flex gap-2">
+            <input
+              readOnly
+              value={refLink}
+              className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-300 focus:outline-none"
+            />
+            <button
+              onClick={copyLink}
+              className={`px-4 py-3 rounded-xl text-sm font-semibold transition ${copied ? "bg-green-700 text-green-200" : "bg-indigo-600 hover:bg-indigo-500"}`}
+            >
+              {copied ? "✓ Kopyalandı" : "Kopyala"}
+            </button>
+          </div>
+          <div className="flex gap-2 mt-3">
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent("Piksel Duvarı'nda Türkiye haritasında kalıcı reklam alanı alabilirsin! 🇹🇷 https://pikselduvari.com/?ref=SENIN_KODUN")}`}
+              target="_blank" rel="noopener noreferrer"
+              className="flex-1 bg-green-800 hover:bg-green-700 transition rounded-xl py-2.5 text-xs text-center font-semibold"
+            >
+              WhatsApp&apos;ta Paylaş
+            </a>
+            <a
+              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent("Türkiye haritasında kalıcı dijital reklam alanı! 1 piksel = 1₺ 🗺️")}&url=${encodeURIComponent("https://pikselduvari.com/?ref=SENIN_KODUN")}`}
+              target="_blank" rel="noopener noreferrer"
+              className="flex-1 bg-gray-800 hover:bg-gray-700 transition rounded-xl py-2.5 text-xs text-center font-semibold"
+            >
+              𝕏 Twitter&apos;da Paylaş
+            </a>
+          </div>
+          <p className="text-gray-600 text-xs mt-3">* Demo link. Gerçek referans kodunuz başvuru sonrası WhatsApp ile iletilir.</p>
         </div>
 
         {/* CTA */}
