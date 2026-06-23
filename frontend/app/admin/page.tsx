@@ -33,7 +33,7 @@ interface MetricDay {
   revenue: number;
 }
 
-type Tab = "dashboard" | "pending" | "all";
+type Tab = "dashboard" | "pending" | "all" | "analytics";
 
 // ─── Revenue Chart (inline SVG) ───────────────────────────────────────────────
 function RevenueChart({ days }: { days: MetricDay[] }) {
@@ -148,6 +148,7 @@ export default function AdminPage() {
   const [pendingSearch, setPendingSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [selectedPending, setSelectedPending] = useState<Set<string>>(new Set());
+  const [analyticsData, setAnalyticsData] = useState<{ totalViews: number; topPages: { page: string; count: number }[] } | null>(null);
   const [rejectModal, setRejectModal] = useState<Pixel | null>(null);
 
   const headers = { "x-admin-secret": secret };
@@ -195,8 +196,34 @@ export default function AdminPage() {
     }
   };
 
+  const loadAnalytics = async () => {
+    try {
+      const { createClient } = require("@supabase/supabase-js");
+      const sb = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_KEY!
+      );
+      const { data } = await sb
+        .from("page_views")
+        .select("page")
+        .gte("created_at", new Date(Date.now() - 86400000).toISOString());
+      const counts: Record<string, number> = {};
+      for (const row of data ?? []) {
+        counts[row.page] = (counts[row.page] ?? 0) + 1;
+      }
+      const topPages = Object.entries(counts)
+        .map(([page, count]) => ({ page, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+      setAnalyticsData({ totalViews: (data ?? []).length, topPages });
+    } catch {
+      console.error("Analytics yüklenemedi");
+    }
+  };
+
   useEffect(() => {
     if (authed && tab === "all") loadAll();
+    if (authed && tab === "analytics") loadAnalytics();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authed, tab, statusFilter]);
 
@@ -311,7 +338,7 @@ export default function AdminPage() {
           <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center text-xs font-bold">PD</div>
           <span className="font-semibold text-sm">Admin</span>
         </div>
-        {(["dashboard", "pending", "all"] as Tab[]).map((t) => (
+        {(["dashboard", "pending", "all", "analytics"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -322,6 +349,7 @@ export default function AdminPage() {
             {t === "dashboard" && "Dashboard"}
             {t === "pending" && `Onay Bekleyen (${pending.length})`}
             {t === "all" && "Tüm Pikseller"}
+            {t === "analytics" && "Analitik"}
           </button>
         ))}
         <div className="mt-auto pt-4 border-t border-gray-800">
@@ -544,6 +572,53 @@ export default function AdminPage() {
                   <p className="text-gray-600 text-center py-8">Sonuç bulunamadı.</p>
                 )}
               </div>
+            )}
+          </div>
+        )}
+        {/* Analytics */}
+        {tab === "analytics" && (
+          <div>
+            <h1 className="text-2xl font-bold mb-6">Analitik</h1>
+            {analyticsData ? (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
+                  <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+                    <div className="text-2xl font-bold text-indigo-400">{analyticsData.totalViews}</div>
+                    <div className="text-gray-500 text-xs mt-1">Bugünkü Sayfa Görüntüleme</div>
+                  </div>
+                  <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+                    <div className="text-2xl font-bold text-green-400">{analyticsData.topPages.length}</div>
+                    <div className="text-gray-500 text-xs mt-1">Benzersiz Sayfa</div>
+                  </div>
+                  <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+                    <div className="text-2xl font-bold text-yellow-400">
+                      {analyticsData.topPages[0]?.page ?? "-"}
+                    </div>
+                    <div className="text-gray-500 text-xs mt-1">En Çok Ziyaret Edilen</div>
+                  </div>
+                </div>
+                <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+                  <h2 className="font-semibold mb-4 text-sm">En Çok Ziyaret Edilen Sayfalar (Bugün)</h2>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-gray-500 border-b border-gray-800 text-left">
+                        <th className="pb-2 pr-4">Sayfa</th>
+                        <th className="pb-2">Görüntüleme</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analyticsData.topPages.map((p) => (
+                        <tr key={p.page} className="border-b border-gray-900">
+                          <td className="py-2 pr-4 text-gray-300 font-mono text-xs">{p.page}</td>
+                          <td className="py-2 text-indigo-400 font-semibold">{p.count}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            ) : (
+              <div className="text-gray-600">Analitik veriler yükleniyor...</div>
             )}
           </div>
         )}

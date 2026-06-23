@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import CookieBanner from "@/components/CookieBanner";
 import { ToastProvider } from "@/components/Toast";
+import PageViewTracker from "@/components/PageViewTracker";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -112,6 +113,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.className} min-h-full flex flex-col bg-gray-950 text-white antialiased`}
       >
         <ToastProvider>
+          <PageViewTracker />
           {children}
           <CookieBanner />
         </ToastProvider>

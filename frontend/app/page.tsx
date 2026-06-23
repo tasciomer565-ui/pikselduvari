@@ -5,6 +5,7 @@ import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import PixelGrid from "@/components/PixelGrid";
 import SelectionPanel from "@/components/SelectionPanel";
 import Minimap from "@/components/Minimap";
+import MobileSelectionSheet from "@/components/MobileSelectionSheet";
 import { REGIONS } from "@/lib/regions";
 import { createClient } from "@supabase/supabase-js";
 import { useToast } from "@/components/Toast";
@@ -653,8 +654,19 @@ export default function Home() {
               Scroll → zoom · Sürükle → alan seç · Sağ tık sürükle → hareket et
             </div>
           </div>
+          {/* Desktop side panel */}
           {selection && (
-            <SelectionPanel
+            <div className="hidden md:block">
+              <SelectionPanel
+                selection={selection}
+                onClose={() => setSelection(null)}
+                onPreset={handlePreset}
+              />
+            </div>
+          )}
+          {/* Mobile bottom sheet */}
+          {selection && (
+            <MobileSelectionSheet
               selection={selection}
               onClose={() => setSelection(null)}
               onPreset={handlePreset}
