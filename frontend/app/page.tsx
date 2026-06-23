@@ -9,6 +9,7 @@ import MobileSelectionSheet from "@/components/MobileSelectionSheet";
 import { REGIONS } from "@/lib/regions";
 import { createClient } from "@supabase/supabase-js";
 import { useToast } from "@/components/Toast";
+import TikTokPopup from "@/components/TikTokPopup";
 
 const supabasePublic = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -1496,6 +1497,7 @@ export default function Home() {
 
       <WhatsAppWidget />
       <SponsorBanner />
+      <TikTokPopup />
     </div>
   );
 }
