@@ -588,7 +588,7 @@ export default function Home() {
                 centerOnInit
                 panning={{ disabled: true }}
                 wheel={{ step: 0.08 }}
-                onTransformed={(ref) => {
+                onTransform={(ref) => {
                   const { positionX, positionY, scale } = ref.state;
                   const containerW = window.innerWidth;
                   const containerH = window.innerHeight;
