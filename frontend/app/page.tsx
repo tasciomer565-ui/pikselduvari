@@ -190,10 +190,10 @@ function EmailCapture() {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
-    await fetch("/api/contact", {
+    await fetch("/api/subscribe", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, subject: "Erken Erişim Kaydı", message: `Erken erişim: ${email}` }),
+      body: JSON.stringify({ email, source: "landing" }),
     });
     setSent(true);
     setLoading(false);
