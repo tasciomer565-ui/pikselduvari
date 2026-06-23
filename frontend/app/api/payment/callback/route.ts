@@ -1,16 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
+async function sendWebhook(pixel: Record<string, unknown>) {
+  const webhookUrl = process.env.WEBHOOK_URL;
+  if (!webhookUrl) return;
+  try {
+    await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        event: "pixel.purchased",
+        timestamp: new Date().toISOString(),
+        pixel,
+      }),
+    });
+  } catch (e) {
+    console.error("Webhook send failed:", e);
+  }
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const { token, mock, id } = body;
 
-  // Mock mod (Iyzico olmadan test)
+  // Mock mode (testing without payment gateway)
   if (mock && id) {
     await supabase.from("pixels").update({
       status: "pending_approval",
       paid_at: new Date().toISOString(),
     }).eq("id", id);
+
+    // Fetch pixel and send webhook
+    const { data: pixel } = await supabase.from("pixels").select("*").eq("id", id).single();
+    if (pixel) await sendWebhook(pixel);
+
     return NextResponse.json({ success: true, pixel_id: id });
   }
 
@@ -42,6 +65,11 @@ export async function POST(req: NextRequest) {
       status: "pending_approval",
       paid_at: new Date().toISOString(),
     }).eq("id", pixelId);
+
+    // Fetch pixel and send webhook
+    const { data: pixel } = await supabase.from("pixels").select("*").eq("id", pixelId).single();
+    if (pixel) await sendWebhook(pixel);
+
     return NextResponse.json({ success: true, pixel_id: pixelId });
   }
 

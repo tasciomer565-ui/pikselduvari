@@ -27,8 +27,113 @@ interface Stats {
   rejected_count: number;
 }
 
+interface MetricDay {
+  date: string;
+  count: number;
+  revenue: number;
+}
+
 type Tab = "dashboard" | "pending" | "all";
 
+// ─── Revenue Chart (inline SVG) ───────────────────────────────────────────────
+function RevenueChart({ days }: { days: MetricDay[] }) {
+  const last6 = days.slice(-6);
+  if (last6.length === 0) return null;
+  const maxRevenue = Math.max(...last6.map((d) => d.revenue), 1);
+  const chartH = 120;
+  const chartW = 400;
+  const barW = Math.floor((chartW - last6.length * 4) / last6.length);
+
+  return (
+    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mt-6">
+      <h3 className="font-semibold text-sm mb-4 text-gray-300">Son 6 Günlük Gelir</h3>
+      <div className="overflow-x-auto">
+        <svg width={chartW} height={chartH + 30} viewBox={`0 0 ${chartW} ${chartH + 30}`}>
+          {last6.map((d, i) => {
+            const barH = Math.max((d.revenue / maxRevenue) * chartH, 2);
+            const bx = i * (barW + 4);
+            const by = chartH - barH;
+            const label = d.date.slice(5); // MM-DD
+            return (
+              <g key={d.date}>
+                <rect
+                  x={bx} y={by} width={barW} height={barH}
+                  rx={4} fill={d.revenue > 0 ? "#4f46e5" : "#1e293b"}
+                  opacity={0.9}
+                >
+                  <title>{d.date}: {d.revenue.toLocaleString("tr-TR")}₺</title>
+                </rect>
+                {d.revenue > 0 && (
+                  <text x={bx + barW / 2} y={by - 4} textAnchor="middle" fill="#818cf8" fontSize={9}>
+                    {d.revenue >= 1000 ? `${(d.revenue / 1000).toFixed(1)}k` : d.revenue}₺
+                  </text>
+                )}
+                <text x={bx + barW / 2} y={chartH + 18} textAnchor="middle" fill="#475569" fontSize={9}>
+                  {label}
+                </text>
+              </g>
+            );
+          })}
+          {/* Grid lines */}
+          {[0.25, 0.5, 0.75, 1].map((r) => (
+            <line
+              key={r}
+              x1={0} y1={chartH - chartH * r}
+              x2={chartW} y2={chartH - chartH * r}
+              stroke="#1e293b" strokeWidth={0.5} strokeDasharray="4,4"
+            />
+          ))}
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// ─── Reject Modal ─────────────────────────────────────────────────────────────
+function RejectModal({
+  pixel,
+  onConfirm,
+  onCancel,
+}: {
+  pixel: Pixel;
+  onConfirm: (reason: string) => void;
+  onCancel: () => void;
+}) {
+  const [reason, setReason] = useState("");
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 max-w-md w-full">
+        <h3 className="font-bold text-lg mb-1">Reddetme Sebebi</h3>
+        <p className="text-gray-500 text-sm mb-4">
+          <strong>{pixel.owner_name}</strong> — {pixel.width}×{pixel.height}px
+        </p>
+        <textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Reddetme sebebini girin (isteğe bağlı)..."
+          rows={3}
+          className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-red-500 text-sm resize-none mb-4"
+        />
+        <div className="flex gap-3">
+          <button
+            onClick={onCancel}
+            className="flex-1 border border-gray-700 hover:border-gray-500 text-gray-400 py-2.5 rounded-xl text-sm transition"
+          >
+            İptal
+          </button>
+          <button
+            onClick={() => onConfirm(reason)}
+            className="flex-1 bg-red-800 hover:bg-red-700 py-2.5 rounded-xl text-sm font-semibold transition"
+          >
+            Reddet
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Admin Page ──────────────────────────────────────────────────────────
 export default function AdminPage() {
   const [secret, setSecret] = useState("");
   const [authed, setAuthed] = useState(false);
@@ -37,9 +142,13 @@ export default function AdminPage() {
   const [pending, setPending] = useState<Pixel[]>([]);
   const [allPixels, setAllPixels] = useState<Pixel[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [metrics, setMetrics] = useState<MetricDay[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [pendingSearch, setPendingSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [selectedPending, setSelectedPending] = useState<Set<string>>(new Set());
+  const [rejectModal, setRejectModal] = useState<Pixel | null>(null);
 
   const headers = { "x-admin-secret": secret };
 
@@ -49,6 +158,7 @@ export default function AdminPage() {
       setPending(data);
       setAuthed(true);
       loadStats();
+      loadMetrics();
     } catch {
       alert("Hatalı şifre.");
     }
@@ -60,6 +170,15 @@ export default function AdminPage() {
       setStats(data);
     } catch {
       console.error("Stats yüklenemedi");
+    }
+  };
+
+  const loadMetrics = async () => {
+    try {
+      const { data } = await axios.get("/api/admin/metrics", { headers });
+      setMetrics(data.days ?? []);
+    } catch {
+      console.error("Metrics yüklenemedi");
     }
   };
 
@@ -87,9 +206,15 @@ export default function AdminPage() {
     loadStats();
   };
 
-  const reject = async (id: string) => {
-    await axios.post(`/api/admin/reject/${id}`, {}, { headers });
-    setPending((prev) => prev.filter((p) => p.id !== id));
+  const rejectWithReason = async (pixel: Pixel) => {
+    setRejectModal(pixel);
+  };
+
+  const confirmReject = async (reason: string) => {
+    if (!rejectModal) return;
+    await axios.post(`/api/admin/reject/${rejectModal.id}`, { rejection_reason: reason }, { headers });
+    setPending((prev) => prev.filter((p) => p.id !== rejectModal.id));
+    setRejectModal(null);
     loadStats();
   };
 
@@ -99,6 +224,18 @@ export default function AdminPage() {
       await axios.post(`/api/admin/approve/${p.id}`, {}, { headers });
     }
     setPending([]);
+    loadStats();
+  };
+
+  const bulkReject = async () => {
+    const selected = pending.filter((p) => selectedPending.has(p.id));
+    if (selected.length === 0) return;
+    if (!confirm(`${selected.length} piksel reddedilecek. Emin misiniz?`)) return;
+    for (const p of selected) {
+      await axios.post(`/api/admin/reject/${p.id}`, { rejection_reason: "Toplu red" }, { headers });
+    }
+    setPending((prev) => prev.filter((p) => !selectedPending.has(p.id)));
+    setSelectedPending(new Set());
     loadStats();
   };
 
@@ -117,10 +254,18 @@ export default function AdminPage() {
     a.click();
   };
 
-  const filteredAll = allPixels.filter((p) =>
-    !search ||
-    p.owner_name?.toLowerCase().includes(search.toLowerCase()) ||
-    p.website_url?.toLowerCase().includes(search.toLowerCase())
+  const filteredAll = allPixels.filter(
+    (p) =>
+      !search ||
+      p.owner_name?.toLowerCase().includes(search.toLowerCase()) ||
+      p.website_url?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredPending = pending.filter(
+    (p) =>
+      !pendingSearch ||
+      p.owner_name?.toLowerCase().includes(pendingSearch.toLowerCase()) ||
+      p.website_url?.toLowerCase().includes(pendingSearch.toLowerCase())
   );
 
   if (!authed) {
@@ -142,6 +287,9 @@ export default function AdminPage() {
           <button onClick={login} className="w-full bg-indigo-600 hover:bg-indigo-500 py-3 rounded-lg font-semibold">
             Giriş
           </button>
+          <p className="text-center text-xs text-gray-600">
+            <a href="/admin/login" className="hover:text-gray-400">Tam giriş sayfasına git →</a>
+          </p>
         </div>
       </main>
     );
@@ -149,6 +297,14 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white flex">
+      {rejectModal && (
+        <RejectModal
+          pixel={rejectModal}
+          onConfirm={confirmReject}
+          onCancel={() => setRejectModal(null)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside className="w-52 bg-gray-900 border-r border-gray-800 flex flex-col p-4 gap-1 shrink-0">
         <div className="flex items-center gap-2 mb-6 px-2 pt-2">
@@ -197,7 +353,11 @@ export default function AdminPage() {
             ) : (
               <div className="text-gray-600 mb-8">İstatistikler yükleniyor...</div>
             )}
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+
+            {/* Revenue Chart */}
+            {metrics.length > 0 && <RevenueChart days={metrics} />}
+
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mt-6">
               <h2 className="font-semibold mb-3">Hızlı İşlemler</h2>
               <div className="flex gap-3">
                 <button
@@ -210,7 +370,7 @@ export default function AdminPage() {
                   onClick={() => { setTab("all"); }}
                   className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm font-semibold"
                 >
-                  Tüm Pikselller
+                  Tüm Pikseller
                 </button>
               </div>
             </div>
@@ -220,9 +380,17 @@ export default function AdminPage() {
         {/* Pending */}
         {tab === "pending" && (
           <div>
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold">Onay Bekleyenler ({pending.length})</h1>
-              <div className="flex gap-2">
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+              <h1 className="text-2xl font-bold">Onay Bekleyenler ({filteredPending.length})</h1>
+              <div className="flex gap-2 flex-wrap">
+                {selectedPending.size > 0 && (
+                  <button
+                    onClick={bulkReject}
+                    className="bg-red-900 hover:bg-red-800 px-4 py-2 rounded-lg text-sm font-semibold"
+                  >
+                    Seçilenleri Reddet ({selectedPending.size})
+                  </button>
+                )}
                 {pending.length > 0 && (
                   <button
                     onClick={bulkApprove}
@@ -240,26 +408,49 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {pending.length === 0 && (
-              <p className="text-gray-500">Onay bekleyen piksel yok.</p>
+            {/* Search in pending */}
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="İsim veya URL ile ara..."
+                value={pendingSearch}
+                onChange={(e) => setPendingSearch(e.target.value)}
+                className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white w-full max-w-sm"
+              />
+            </div>
+
+            {filteredPending.length === 0 && (
+              <p className="text-gray-500">{pendingSearch ? "Sonuç bulunamadı." : "Onay bekleyen piksel yok."}</p>
             )}
 
             <div className="grid gap-4">
-              {pending.map((p) => (
-                <div key={p.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex gap-4 items-start">
+              {filteredPending.map((p) => (
+                <div key={p.id} className={`bg-gray-900 border rounded-xl p-5 flex gap-4 items-start transition ${selectedPending.has(p.id) ? "border-indigo-600" : "border-gray-800"}`}>
+                  {/* Checkbox */}
+                  <input
+                    type="checkbox"
+                    checked={selectedPending.has(p.id)}
+                    onChange={(e) => {
+                      const s = new Set(selectedPending);
+                      if (e.target.checked) s.add(p.id); else s.delete(p.id);
+                      setSelectedPending(s);
+                    }}
+                    className="mt-1 w-4 h-4 rounded"
+                  />
+                  {/* Image preview */}
                   <div className="w-20 h-20 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
                     {p.image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.image_url} alt={p.tooltip} className="w-full h-full object-cover" />
+                      <img src={p.image_url} alt={p.owner_name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">Görsel yok</div>
+                      <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs text-center p-1">Görsel yok</div>
                     )}
                   </div>
                   <div className="flex-1 space-y-1 text-sm">
                     <p className="font-semibold text-white">{p.owner_name}</p>
                     <p className="text-gray-400">{p.website_url}</p>
-                    <p className="text-gray-500">{p.tooltip}</p>
-                    <p className="text-gray-600">
+                    <p className="text-gray-500 text-xs">{p.tooltip}</p>
+                    <p className="text-gray-600 text-xs">
                       {p.width}×{p.height}px · ({p.x},{p.y}) · {p.price} ₺ · {new Date(p.paid_at).toLocaleDateString("tr-TR")}
                     </p>
                   </div>
@@ -267,7 +458,7 @@ export default function AdminPage() {
                     <button onClick={() => approve(p.id)} className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-semibold">
                       Onayla
                     </button>
-                    <button onClick={() => reject(p.id)} className="bg-red-900 hover:bg-red-800 px-4 py-2 rounded-lg text-sm font-semibold">
+                    <button onClick={() => rejectWithReason(p)} className="bg-red-900 hover:bg-red-800 px-4 py-2 rounded-lg text-sm font-semibold">
                       Reddet
                     </button>
                   </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import CookieBanner from "@/components/CookieBanner";
+import { ToastProvider } from "@/components/Toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -47,26 +48,73 @@ export const metadata: Metadata = {
   },
 };
 
+const jsonLdWebsite = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Piksel Duvarı",
+  url: "https://pikselduvari.com",
+  description: "Türkiye'nin dijital piksel reklam duvarı. 1.000.000 piksellik haritada logonuzu sergileyin.",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: "https://pikselduvari.com/sss?q={search_term_string}",
+    "query-input": "required name=search_term_string",
+  },
+};
+
+const jsonLdProduct = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: "Piksel Reklam Alanı",
+  description: "Türkiye haritasında kalıcı piksel reklam alanı. Bir kez öde, sonsuza kadar görün.",
+  brand: { "@type": "Brand", name: "Piksel Duvarı" },
+  offers: {
+    "@type": "AggregateOffer",
+    lowPrice: "100",
+    highPrice: "1000000",
+    priceCurrency: "TRY",
+    availability: "https://schema.org/InStock",
+    seller: { "@type": "Organization", name: "Piksel Duvarı" },
+  },
+};
+
+const jsonLdOrg = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Piksel Duvarı",
+  url: "https://pikselduvari.com",
+  logo: "https://pikselduvari.com/icon.png",
+  contactPoint: {
+    "@type": "ContactPoint",
+    telephone: "+90-555-166-33-80",
+    contactType: "customer service",
+    availableLanguage: "Turkish",
+  },
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="tr" className="h-full">
       <head>
-        {/* Google Analytics 4 — GA_MEASUREMENT_ID ile değiştirin */}
-        {/*
-        <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID" />
-        <script dangerouslySetInnerHTML={{ __html: `
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'GA_MEASUREMENT_ID');
-        `}} />
-        */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebsite) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdProduct) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrg) }}
+        />
       </head>
       <body
         className={`${inter.className} min-h-full flex flex-col bg-gray-950 text-white antialiased`}
       >
-        {children}
-        <CookieBanner />
+        <ToastProvider>
+          {children}
+          <CookieBanner />
+        </ToastProvider>
       </body>
     </html>
   );

@@ -13,6 +13,7 @@ interface Props {
   onSelect: (s: Selection | null) => void;
   onRegion?: (name: string | null) => void;
   selectable?: boolean;
+  showSoldOverlay?: boolean;
 }
 
 interface TooltipInfo {
@@ -21,7 +22,7 @@ interface TooltipInfo {
   y: number;
 }
 
-export default function PixelGrid({ pixels, selection, onSelect, onRegion, selectable = true }: Props) {
+export default function PixelGrid({ pixels, selection, onSelect, onRegion, selectable = true, showSoldOverlay = false }: Props) {
   const divRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
   const [startCell, setStartCell] = useState<{ x: number; y: number } | null>(null);
@@ -157,6 +158,22 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
         </div>
       ))}
 
+      {/* 3b. Sold/Available overlay */}
+      {showSoldOverlay && (
+        <>
+          {/* Green = available (full grid) */}
+          <div className="absolute inset-0 pointer-events-none" style={{ background: "rgba(34,197,94,0.15)", zIndex: 4 }} />
+          {/* Red = sold pixels */}
+          {pixels.map((p) => (
+            <div
+              key={`overlay-${p.id}`}
+              className="absolute pointer-events-none"
+              style={{ left: p.x, top: p.y, width: p.width, height: p.height, background: "rgba(239,68,68,0.5)", zIndex: 4 }}
+            />
+          ))}
+        </>
+      )}
+
       {/* 4. Satılmış pikseller */}
       {pixels.map((p) => (
         <a
@@ -270,7 +287,7 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
               boxShadow: "0 2px 6px rgba(0,0,0,0.5)",
             }}
           >
-            {selection.width}×{selection.height} · {(selection.width * selection.height).toLocaleString("tr-TR")} ₺
+            {selection.width}×{selection.height} · ({Math.floor(selection.x/10)+1},{Math.floor(selection.y/10)+1})→({Math.floor((selection.x+selection.width)/10)},{Math.floor((selection.y+selection.height)/10)}) · {(selection.width * selection.height).toLocaleString("tr-TR")} ₺
           </div>
           {/* Köşe tutucuları */}
           {[
