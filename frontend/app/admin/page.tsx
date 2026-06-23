@@ -261,7 +261,11 @@ export default function AdminPage() {
   }, [authed, tab, statusFilter]);
 
   const approve = async (id: string) => {
-    await axios.post(`/api/admin/approve/${id}`, {}, { headers });
+    // Onayla + onay maili gönder
+    await Promise.all([
+      axios.post(`/api/admin/approve/${id}`, {}, { headers }),
+      axios.post(`/api/admin/approve-pixel`, { pixelId: id }, { headers }),
+    ]);
     setPending((prev) => prev.filter((p) => p.id !== id));
     loadStats();
   };
