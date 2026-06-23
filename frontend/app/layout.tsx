@@ -7,7 +7,7 @@ import PageViewTracker from "@/components/PageViewTracker";
 import Script from "next/script";
 
 // GA4 Measurement ID — replace G-XXXXXXXXXX with your actual GA4 ID
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "G-XXXXXXXXXX";
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "G-TLT6TW66LY";
 
 const inter = Inter({ subsets: ["latin"] });
 
