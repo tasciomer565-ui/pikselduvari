@@ -8,11 +8,19 @@ import { getRegionAt } from "@/lib/regions";
 interface Props {
   selection: Selection;
   onClose: () => void;
+  onPreset?: (w: number, h: number) => void;
 }
 
 const PIXEL_PRICE = 1;
 
-export default function SelectionPanel({ selection, onClose }: Props) {
+const PRESETS = [
+  { label: "10×10", w: 10, h: 10, price: "100₺" },
+  { label: "20×20", w: 20, h: 20, price: "400₺" },
+  { label: "50×50", w: 50, h: 50, price: "2.500₺" },
+  { label: "100×100", w: 100, h: 100, price: "10.000₺" },
+];
+
+export default function SelectionPanel({ selection, onClose, onPreset }: Props) {
   const router = useRouter();
   const pixels = selection.width * selection.height;
   const price = pixels * PIXEL_PRICE;
@@ -30,7 +38,7 @@ export default function SelectionPanel({ selection, onClose }: Props) {
   };
 
   return (
-    <div className="w-72 border-l border-gray-800/60 bg-gray-900/95 backdrop-blur-sm p-5 flex flex-col gap-4">
+    <div className="w-72 border-l border-gray-800/60 bg-gray-900/95 backdrop-blur-sm p-5 flex flex-col gap-4 overflow-y-auto">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-white flex items-center gap-2">
           <ShoppingCart size={16} className="text-indigo-400" />
@@ -39,6 +47,27 @@ export default function SelectionPanel({ selection, onClose }: Props) {
         <button onClick={onClose} className="text-gray-600 hover:text-white transition rounded-lg p-1 hover:bg-gray-800">
           <X size={16} />
         </button>
+      </div>
+
+      {/* Preset size buttons */}
+      <div>
+        <p className="text-xs text-gray-500 mb-2">Hızlı Boyut Seç</p>
+        <div className="grid grid-cols-2 gap-1.5">
+          {PRESETS.map((p) => (
+            <button
+              key={p.label}
+              onClick={() => onPreset?.(p.w, p.h)}
+              className={`text-left px-3 py-2 rounded-lg border text-xs transition ${
+                selection.width === p.w && selection.height === p.h
+                  ? "border-indigo-500 bg-indigo-950/50 text-indigo-300"
+                  : "border-gray-700 bg-gray-800/50 text-gray-300 hover:border-gray-600"
+              }`}
+            >
+              <div className="font-semibold">{p.label}</div>
+              <div className="text-gray-500">{p.price}</div>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Önizleme */}
@@ -89,7 +118,7 @@ export default function SelectionPanel({ selection, onClose }: Props) {
       </button>
 
       <p className="text-xs text-center text-gray-600">
-        🔒 Güvenli ödeme
+        Güvenli ödeme
       </p>
     </div>
   );

@@ -1,9 +1,16 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import PixelGrid from "@/components/PixelGrid";
 import SelectionPanel from "@/components/SelectionPanel";
+import { REGIONS } from "@/lib/regions";
+import { createClient } from "@supabase/supabase-js";
+
+const supabasePublic = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_KEY!
+);
 
 export interface Pixel {
   id: string;
@@ -24,24 +31,76 @@ export interface Selection {
   height: number;
 }
 
+// WhatsApp floating button
+function WhatsAppButton() {
+  return (
+    <a
+      href="https://wa.me/905551663380"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-green-500 hover:bg-green-400 transition shadow-lg rounded-full px-4 py-3 text-white font-semibold text-sm"
+      style={{ boxShadow: "0 4px 20px rgba(34,197,94,0.4)" }}
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+      </svg>
+      Destek
+    </a>
+  );
+}
+
+
 export default function Home() {
   const [pixels, setPixels] = useState<Pixel[]>([]);
   const [selection, setSelection] = useState<Selection | null>(null);
   const [loading, setLoading] = useState(true);
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const [view, setView] = useState<"landing" | "grid">("landing");
+  const [liveCount, setLiveCount] = useState(0);
+  const [selectedRegion, setSelectedRegion] = useState<string>("");
+  const [panTarget, setPanTarget] = useState<string | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/pixels")
       .then((r) => r.json())
-      .then((data) => { setPixels(Array.isArray(data) ? data : []); setLoading(false); })
+      .then((data) => {
+        const arr = Array.isArray(data) ? data : [];
+        setPixels(arr);
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
+
+    // Realtime subscription
+    const channel = supabasePublic
+      .channel("pixels-live")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "pixels", filter: "status=eq.approved" },
+        (payload) => {
+          const np = payload.new as Pixel;
+          setPixels((prev) => {
+            const exists = prev.find((p) => p.id === np.id);
+            if (exists) return prev.map((p) => (p.id === np.id ? np : p));
+            return [...prev, np];
+          });
+          setLiveCount((c) => c + 1);
+        }
+      )
+      .subscribe();
+
+    return () => { supabasePublic.removeChannel(channel); };
   }, []);
 
   const totalSold = pixels.reduce((acc, p) => acc + p.width * p.height, 0);
   const totalPixels = 1_000_000;
   const pct = ((totalSold / totalPixels) * 100).toFixed(1);
+
+  const handlePreset = useCallback((w: number, h: number) => {
+    setSelection((prev) =>
+      prev ? { x: prev.x, y: prev.y, width: w, height: h } : { x: 0, y: 0, width: w, height: h }
+    );
+  }, []);
 
   if (view === "grid") {
     return (
@@ -51,9 +110,17 @@ export default function Home() {
           <button onClick={() => setView("landing")} className="flex items-center gap-2 text-gray-400 hover:text-white transition text-sm">
             ← Geri
           </button>
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-indigo-600 flex items-center justify-center text-xs font-bold">P</div>
-            <span className="font-bold text-sm">Piksel Duvarı</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded bg-indigo-600 flex items-center justify-center text-xs font-bold">P</div>
+              <span className="font-bold text-sm">Piksel Duvarı</span>
+            </div>
+            {/* Live indicator */}
+            <div className="flex items-center gap-1.5 bg-red-950/60 border border-red-800/50 rounded-full px-2 py-0.5 text-xs text-red-400">
+              <span className="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse" />
+              Canlı
+              {liveCount > 0 && <span className="text-red-300">+{liveCount}</span>}
+            </div>
           </div>
 
           <div className="text-xs text-gray-500 hidden sm:block">
@@ -65,13 +132,27 @@ export default function Home() {
         </header>
 
         {/* Stats şeridi */}
-        <div className="bg-gray-900 border-b border-gray-800 px-5 py-2 flex items-center gap-6 text-xs flex-wrap">
+        <div className="bg-gray-900 border-b border-gray-800 px-5 py-2 flex items-center gap-4 text-xs flex-wrap">
           <span className="text-gray-400">Satılan: <strong className="text-white">{totalSold.toLocaleString("tr-TR")}</strong></span>
           <span className="text-gray-400">Kalan: <strong className="text-green-400">{(totalPixels - totalSold).toLocaleString("tr-TR")}</strong></span>
           <span className="text-gray-400">Doluluk: <strong className="text-indigo-400">%{pct}</strong></span>
           <div className="flex-1 bg-gray-800 rounded-full h-1 min-w-24">
             <div className="bg-indigo-500 h-1 rounded-full" style={{ width: `${Math.max(Number(pct), 0.1)}%` }} />
           </div>
+          {/* Region selector */}
+          <select
+            value={selectedRegion}
+            onChange={(e) => {
+              setSelectedRegion(e.target.value);
+              if (e.target.value) setPanTarget(e.target.value);
+            }}
+            className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white ml-2"
+          >
+            <option value="">Bölge Seç</option>
+            {REGIONS.map((r) => (
+              <option key={r.id} value={r.id}>{r.name}</option>
+            ))}
+          </select>
         </div>
 
         <div className="flex flex-1 overflow-hidden">
@@ -90,7 +171,23 @@ export default function Home() {
                 panning={{ disabled: true }}
                 wheel={{ step: 0.08 }}
               >
-                {({ zoomIn, zoomOut, resetTransform }) => (
+                {({ zoomIn, zoomOut, resetTransform, setTransform }) => {
+                  // Pan to selected region
+                  if (panTarget) {
+                    const region = REGIONS.find((r) => r.id === panTarget);
+                    if (region) {
+                      const scale = 1.2;
+                      const cx = region.x + region.w / 2;
+                      const cy = region.y + region.h / 2;
+                      const posX = -cx * scale + window.innerWidth / 2;
+                      const posY = -cy * scale + window.innerHeight / 2;
+                      setTimeout(() => {
+                        setTransform(posX, posY, scale, 400);
+                        setPanTarget(null);
+                      }, 10);
+                    }
+                  }
+                  return (
                   <>
                     {/* Zoom kontrolleri */}
                     <div className="absolute top-3 right-3 z-50 flex flex-col gap-1">
@@ -108,15 +205,17 @@ export default function Home() {
                       />
                     </TransformComponent>
                   </>
-                )}
+                  );
+                }}
               </TransformWrapper>
             )}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm text-gray-400 text-xs px-4 py-2 rounded-full border border-gray-700 pointer-events-none">
               Scroll → zoom · Sürükle → alan seç · Sağ tık sürükle → hareket et
             </div>
           </div>
-          {selection && <SelectionPanel selection={selection} onClose={() => setSelection(null)} />}
+          {selection && <SelectionPanel selection={selection} onClose={() => setSelection(null)} onPreset={handlePreset} />}
         </div>
+        <WhatsAppButton />
       </div>
     );
   }
@@ -131,7 +230,7 @@ export default function Home() {
           <span className="font-bold text-lg">Piksel Duvarı</span>
         </div>
         <div className="flex items-center gap-4">
-          <a href="#nasil-calisir" className="text-gray-400 hover:text-white text-sm transition hidden sm:block">Nasıl Çalışır?</a>
+          <a href="/nasil-calisir" className="text-gray-400 hover:text-white text-sm transition hidden sm:block">Nasıl Çalışır?</a>
           <a href="#fiyat" className="text-gray-400 hover:text-white text-sm transition hidden sm:block">Fiyatlar</a>
           <button
             onClick={() => setView("grid")}
@@ -237,6 +336,11 @@ export default function Home() {
             </div>
           ))}
         </div>
+        <div className="text-center mt-8">
+          <a href="/nasil-calisir" className="text-indigo-400 hover:text-indigo-300 text-sm transition">
+            Detaylı rehberi gör →
+          </a>
+        </div>
       </section>
 
       {/* Fiyat */}
@@ -306,14 +410,52 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800 px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-600">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded bg-indigo-600 flex items-center justify-center text-xs font-bold text-white">PD</div>
-          <span>Piksel Duvarı © 2024</span>
+      <footer className="border-t border-gray-800 px-6 py-10">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-7 h-7 rounded bg-indigo-600 flex items-center justify-center text-xs font-bold text-white">PD</div>
+                <span className="font-bold">Piksel Duvarı</span>
+              </div>
+              <p className="text-gray-600 text-xs max-w-xs">
+                Türkiye&apos;nin dijital piksel reklam duvarı. Bir kez öde, sonsuza kadar kal.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 text-sm">
+              <div>
+                <p className="text-gray-500 text-xs font-semibold uppercase mb-2">Platform</p>
+                <div className="space-y-2">
+                  <a href="/nasil-calisir" className="block text-gray-400 hover:text-white transition text-xs">Nasıl Çalışır?</a>
+                  <button onClick={() => setView("grid")} className="block text-gray-400 hover:text-white transition text-xs">Alan Satın Al</button>
+                  <a href="/iletisim" className="block text-gray-400 hover:text-white transition text-xs">İletişim</a>
+                </div>
+              </div>
+              <div>
+                <p className="text-gray-500 text-xs font-semibold uppercase mb-2">Yasal</p>
+                <div className="space-y-2">
+                  <a href="/kvkk" className="block text-gray-400 hover:text-white transition text-xs">KVKK</a>
+                  <a href="/kullanim-sartlari" className="block text-gray-400 hover:text-white transition text-xs">Kullanım Şartları</a>
+                  <a href="/cerez-politikasi" className="block text-gray-400 hover:text-white transition text-xs">Çerez Politikası</a>
+                </div>
+              </div>
+              <div>
+                <p className="text-gray-500 text-xs font-semibold uppercase mb-2">İletişim</p>
+                <div className="space-y-2">
+                  <a href="https://wa.me/905551663380" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-white transition text-xs">WhatsApp</a>
+                  <a href="mailto:info@pikselduvari.com" className="block text-gray-400 hover:text-white transition text-xs">E-posta</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
+            <span>Piksel Duvarı © 2025 — Her piksel sonsuza kadar senin.</span>
+            <a href="/admin" className="hover:text-gray-400 transition">Admin</a>
+          </div>
         </div>
-        <span>Her piksel sonsuza kadar senin.</span>
-        <a href="/admin" className="hover:text-gray-400 transition">Admin</a>
       </footer>
+
+      <WhatsAppButton />
     </div>
   );
 }

@@ -15,11 +15,18 @@ interface Props {
   selectable?: boolean;
 }
 
+interface TooltipInfo {
+  pixel: Pixel;
+  x: number;
+  y: number;
+}
+
 export default function PixelGrid({ pixels, selection, onSelect, onRegion, selectable = true }: Props) {
   const divRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
   const [startCell, setStartCell] = useState<{ x: number; y: number } | null>(null);
   const [hovered, setHovered] = useState<{ x: number; y: number } | null>(null);
+  const [tooltip, setTooltip] = useState<TooltipInfo | null>(null);
 
   // Sağ tık → context menu engelle
   const handleContextMenu = (e: React.MouseEvent) => e.preventDefault();
@@ -157,10 +164,32 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
           href={p.website_url}
           target="_blank"
           rel="noopener noreferrer"
-          title={p.tooltip}
           className="absolute block overflow-hidden hover:opacity-80 transition-opacity"
           style={{ left: p.x, top: p.y, width: p.width, height: p.height, zIndex: 5 }}
           onMouseDown={(e) => e.stopPropagation()}
+          onMouseEnter={(e) => {
+            const rect = divRef.current?.getBoundingClientRect();
+            if (!rect) return;
+            const scaleX = GRID_SIZE / rect.width;
+            const scaleY = GRID_SIZE / rect.height;
+            setTooltip({
+              pixel: p,
+              x: (e.clientX - rect.left) * scaleX,
+              y: (e.clientY - rect.top) * scaleY,
+            });
+          }}
+          onMouseMove={(e) => {
+            const rect = divRef.current?.getBoundingClientRect();
+            if (!rect) return;
+            const scaleX = GRID_SIZE / rect.width;
+            const scaleY = GRID_SIZE / rect.height;
+            setTooltip((prev) => prev ? {
+              ...prev,
+              x: (e.clientX - rect.left) * scaleX,
+              y: (e.clientY - rect.top) * scaleY,
+            } : null);
+          }}
+          onMouseLeave={() => setTooltip(null)}
         >
           {p.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -170,6 +199,35 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
           )}
         </a>
       ))}
+
+      {/* Rich tooltip */}
+      {tooltip && (
+        <div
+          className="absolute pointer-events-none z-50"
+          style={{
+            left: Math.min(tooltip.x + 12, GRID_SIZE - 220),
+            top: tooltip.y > GRID_SIZE / 2 ? tooltip.y - 100 : tooltip.y + 12,
+          }}
+        >
+          <div className="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl p-3 w-52">
+            {tooltip.pixel.image_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={tooltip.pixel.image_url}
+                alt={tooltip.pixel.owner_name}
+                className="w-full h-16 object-contain rounded-lg mb-2 bg-gray-800"
+              />
+            )}
+            <p className="font-semibold text-white text-sm truncate">{tooltip.pixel.owner_name}</p>
+            {tooltip.pixel.website_url && (
+              <p className="text-indigo-400 text-xs truncate mt-0.5">{tooltip.pixel.website_url}</p>
+            )}
+            {tooltip.pixel.tooltip && (
+              <p className="text-gray-400 text-xs mt-1 line-clamp-2">{tooltip.pixel.tooltip}</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* 5. Hover highlight */}
       {hovered && !dragging && (
