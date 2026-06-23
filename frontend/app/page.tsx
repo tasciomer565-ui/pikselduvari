@@ -873,8 +873,8 @@ export default function Home() {
                 maxScale={15}
                 initialScale={0.5}
                 centerOnInit
-                panning={{ disabled: true }}
-                wheel={{ step: 0.015, activationKeys: [] }}
+                panning={{ disabled: false, activationKeys: ["Control"] }}
+                wheel={{ step: 0.012 }}
                 onTransform={(ref) => {
                   const { positionX, positionY, scale } = ref.state;
                   const containerW = window.innerWidth;
@@ -937,7 +937,7 @@ export default function Home() {
             )}
 
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm text-gray-400 text-xs px-4 py-2 rounded-full border border-gray-700 pointer-events-none">
-              Scroll → zoom · Sürükle → alan seç · Sağ tık sürükle → hareket et
+              Scroll → zoom · Sol sürükle → alan seç · Ctrl + sürükle → haritayı kaydır
             </div>
           </div>
 

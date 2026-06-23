@@ -46,6 +46,7 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!selectable) return;
+    if (e.ctrlKey || e.metaKey) return; // Ctrl+sürükle = pan, seçim yapma
     e.preventDefault();
     const cell = getCellFromEvent(e);
     if (!cell) return;
