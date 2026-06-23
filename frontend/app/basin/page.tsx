@@ -24,7 +24,7 @@ export default function BasinPage() {
           <div className="text-xs text-indigo-400 font-semibold uppercase tracking-wider mb-3">Medya & Basın</div>
           <h1 className="text-4xl font-extrabold mb-4">Basın Odası</h1>
           <p className="text-gray-400 text-lg leading-relaxed max-w-2xl">
-            Piksel Duvarı hakkında haber yazmak mı istiyorsunuz? İhtiyaç duyduğunuz her şey burada. Sorularınız için <a href="mailto:basin@pikselduvari.com" className="text-indigo-400 hover:underline">basin@pikselduvari.com</a> adresine yazın.
+            Piksel Duvarı hakkında haber yazmak mı istiyorsunuz? İhtiyaç duyduğunuz her şey burada. Sorularınız için <a href="mailto:info@pikselduvari.com" className="text-indigo-400 hover:underline">info@pikselduvari.com</a> adresine yazın.
           </p>
         </div>
 
@@ -35,7 +35,7 @@ export default function BasinPage() {
             <div className="font-bold mb-1">Basın İletişim</div>
             <p className="text-gray-400 text-sm">Röportaj, açıklama ve medya talepleriniz için 24 saat içinde yanıt veriyoruz.</p>
             <div className="flex gap-3 mt-3 flex-wrap">
-              <a href="mailto:basin@pikselduvari.com" className="bg-indigo-600 hover:bg-indigo-500 transition px-4 py-2 rounded-lg text-sm font-semibold">E-posta Gönder</a>
+              <a href="mailto:info@pikselduvari.com" className="bg-indigo-600 hover:bg-indigo-500 transition px-4 py-2 rounded-lg text-sm font-semibold">E-posta Gönder</a>
               <a href="https://wa.me/905551663380" target="_blank" rel="noopener noreferrer" className="bg-green-700 hover:bg-green-600 transition px-4 py-2 rounded-lg text-sm font-semibold">WhatsApp</a>
             </div>
           </div>
@@ -120,7 +120,7 @@ export default function BasinPage() {
           </div>
 
           <div className="mt-4">
-            <a href="mailto:basin@pikselduvari.com?subject=Logo ve Marka Materyali Talebi" className="bg-gray-700 hover:bg-gray-600 transition px-4 py-2 rounded-lg text-sm font-semibold inline-block">
+            <a href="mailto:info@pikselduvari.com?subject=Logo ve Marka Materyali Talebi" className="bg-gray-700 hover:bg-gray-600 transition px-4 py-2 rounded-lg text-sm font-semibold inline-block">
               Logo Dosyalarını Talep Et
             </a>
           </div>
@@ -144,7 +144,7 @@ export default function BasinPage() {
             ))}
           </div>
           <div className="mt-5">
-            <a href="mailto:basin@pikselduvari.com?subject=Medya Kiti Talebi" className="bg-indigo-600 hover:bg-indigo-500 transition px-5 py-2.5 rounded-xl text-sm font-semibold inline-block">
+            <a href="mailto:info@pikselduvari.com?subject=Medya Kiti Talebi" className="bg-indigo-600 hover:bg-indigo-500 transition px-5 py-2.5 rounded-xl text-sm font-semibold inline-block">
               Medya Kiti Talep Et
             </a>
           </div>
@@ -155,7 +155,7 @@ export default function BasinPage() {
           <h3 className="font-bold text-yellow-300 mb-2">📝 Haber Yazarlarına Not</h3>
           <p className="text-gray-400 text-sm leading-relaxed">
             Haberlerinizde <strong className="text-white">pikselduvari.com</strong> bağlantısını eklerseniz memnuniyet duyarız.
-            Röportaj talebiniz varsa <a href="mailto:basin@pikselduvari.com" className="text-indigo-400 hover:underline">basin@pikselduvari.com</a> adresine yazın — genellikle 24 saat içinde yanıt veriyoruz.
+            Röportaj talebiniz varsa <a href="mailto:info@pikselduvari.com" className="text-indigo-400 hover:underline">info@pikselduvari.com</a> adresine yazın — genellikle 24 saat içinde yanıt veriyoruz.
           </p>
         </div>
 
@@ -165,9 +165,9 @@ export default function BasinPage() {
           <div className="space-y-3">
             {[
               { q: "Piksel Duvarı nasıl çalışır?", a: "Piksel Duvarı, 1.000.000 piksellik bir Türkiye haritası sunar. İşletmeler piksel (alan) satın alır, logo veya görsel yükler. Ziyaretçiler haritayı incelediğinde bu logolar ve markanın web sitesi görünür. 1 piksel = 1₺, tek seferlik ödeme." },
-              { q: "Kim kurdu?", a: "Piksel Duvarı, Türk girişimciler tarafından 2025 yılında kuruldu. İletişim için basin@pikselduvari.com adresini kullanabilirsiniz." },
+              { q: "Kim kurdu?", a: "Piksel Duvarı, Türk girişimciler tarafından 2025 yılında kuruldu. İletişim için info@pikselduvari.com adresini kullanabilirsiniz." },
               { q: "Yatırım aldınız mı?", a: "Platform şu an öz sermayeyle büyüyor. Yatırım görüşmeleri için info@pikselduvari.com adresini kullanabilirsiniz." },
-              { q: "Kaç piksel satıldı?", a: "Güncel istatistikler için basin@pikselduvari.com adresine yazın. Veriler talep üzerine paylaşılmaktadır." },
+              { q: "Kaç piksel satıldı?", a: "Güncel istatistikler için info@pikselduvari.com adresine yazın. Veriler talep üzerine paylaşılmaktadır." },
             ].map((faq, i) => (
               <details key={i} className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
                 <summary className="px-5 py-4 font-semibold text-sm cursor-pointer hover:bg-gray-800/50 transition">{faq.q}</summary>
