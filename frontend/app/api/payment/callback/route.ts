@@ -19,6 +19,26 @@ async function sendWebhook(pixel: Record<string, unknown>) {
   }
 }
 
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const mock = searchParams.get("mock");
+  const id = searchParams.get("id");
+
+  if (mock === "true" && id) {
+    await supabase.from("pixels").update({
+      status: "pending_approval",
+      paid_at: new Date().toISOString(),
+    }).eq("id", id);
+
+    const { data: pixel } = await supabase.from("pixels").select("*").eq("id", id).single();
+    if (pixel) await sendWebhook(pixel);
+
+    return NextResponse.redirect(new URL(`/odeme/sonuc?mock=true&id=${id}&success=true`, req.url));
+  }
+
+  return NextResponse.json({ error: "Geçersiz istek" }, { status: 400 });
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const { token, mock, id } = body;

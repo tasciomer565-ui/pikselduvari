@@ -4,11 +4,96 @@ import { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 
+// ─── Confetti (CSS animated squares) ─────────────────────────────────────────
+function Confetti() {
+  const pieces = Array.from({ length: 24 }, (_, i) => i);
+  const colors = ["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#f97316"];
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+      {pieces.map((i) => {
+        const color = colors[i % colors.length];
+        const left = `${(i * 4.2 + Math.sin(i) * 8) % 100}%`;
+        const delay = `${(i * 0.17) % 2}s`;
+        const size = `${8 + (i % 5) * 4}px`;
+        const duration = `${2.5 + (i % 4) * 0.4}s`;
+        return (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              left,
+              top: "-20px",
+              width: size,
+              height: size,
+              backgroundColor: color,
+              borderRadius: i % 3 === 0 ? "50%" : "2px",
+              animation: `confettiFall ${duration} ${delay} ease-in forwards`,
+              opacity: 0.85,
+            }}
+          />
+        );
+      })}
+      <style>{`
+        @keyframes confettiFall {
+          0%   { transform: translateY(0) rotate(0deg); opacity: 0.85; }
+          80%  { opacity: 0.7; }
+          100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ─── Green Checkmark Animation ────────────────────────────────────────────────
+function CheckmarkAnim() {
+  return (
+    <div className="flex items-center justify-center mb-6">
+      <div className="relative w-24 h-24">
+        <svg viewBox="0 0 100 100" className="w-24 h-24">
+          <circle
+            cx="50" cy="50" r="46"
+            fill="none"
+            stroke="#10b981"
+            strokeWidth="6"
+            strokeDasharray="289"
+            strokeDashoffset="289"
+            style={{ animation: "drawCircle 0.6s ease forwards" }}
+          />
+          <polyline
+            points="28,52 44,66 72,36"
+            fill="none"
+            stroke="#10b981"
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray="60"
+            strokeDashoffset="60"
+            style={{ animation: "drawCheck 0.4s 0.5s ease forwards" }}
+          />
+        </svg>
+      </div>
+      <style>{`
+        @keyframes drawCircle {
+          to { stroke-dashoffset: 0; }
+        }
+        @keyframes drawCheck {
+          to { stroke-dashoffset: 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 function OdemeSonuc() {
   const params = useSearchParams();
   const token = params.get("token");
+  const mockParam = params.get("mock");
+  const idParam = params.get("id");
+  const successParam = params.get("success");
+
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [pixelId, setPixelId] = useState<string | null>(null);
+  const [pixelInfo, setPixelInfo] = useState<{ x: number; y: number; width: number; height: number; price: number } | null>(null);
 
   // Image upload state
   const [uploadFile, setUploadFile] = useState<File | null>(null);
@@ -19,11 +104,54 @@ function OdemeSonuc() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    // Mock mode: already processed by GET redirect, or direct mock link
+    if (mockParam === "true" && idParam) {
+      if (successParam === "true") {
+        // Already processed by GET handler
+        setPixelId(idParam);
+        setStatus("success");
+        fetchPixelInfo(idParam);
+      } else {
+        // Process mock payment now via POST
+        axios.post(`/api/payment/callback`, { mock: true, id: idParam })
+          .then((r) => {
+            setStatus("success");
+            setPixelId(r.data.pixel_id || idParam);
+            fetchPixelInfo(r.data.pixel_id || idParam);
+          })
+          .catch(() => {
+            // Fallback: still show success for mock
+            setPixelId(idParam);
+            setStatus("success");
+            fetchPixelInfo(idParam);
+          });
+      }
+      return;
+    }
+
     if (!token) { setStatus("error"); return; }
     axios.post(`/api/payment/callback`, { token })
-      .then((r) => { setStatus("success"); setPixelId(r.data.pixel_id); })
+      .then((r) => {
+        setStatus("success");
+        const pid = r.data.pixel_id;
+        setPixelId(pid);
+        fetchPixelInfo(pid);
+      })
       .catch(() => setStatus("error"));
-  }, [token]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, mockParam, idParam, successParam]);
+
+  const fetchPixelInfo = async (pid: string) => {
+    try {
+      const res = await fetch(`/api/pixels/${pid}`);
+      if (res.ok) {
+        const data = await res.json();
+        setPixelInfo({ x: data.x, y: data.y, width: data.width, height: data.height, price: data.price });
+      }
+    } catch {
+      // not critical
+    }
+  };
 
   const handleFileSelect = (file: File) => {
     if (file.size > 2 * 1024 * 1024) {
@@ -59,12 +187,14 @@ function OdemeSonuc() {
     }
   };
 
-  const shareText = "Piksel Duvarı'nda yer aldım! Türkiye'nin dijital reklam duvarında ben de varım. pikselduvari.com";
+  const shareText = "Türkiye'nin dijital piksel duvarında yerim var! 🎯 pikselduvari.com";
   const shareUrl = "https://pikselduvari.com";
 
   return (
-    <main className="min-h-screen bg-gray-950 text-white flex items-center justify-center p-4">
-      <div className="text-center max-w-lg w-full">
+    <main className="min-h-screen bg-gray-950 text-white flex items-center justify-center p-4 relative">
+      {status === "success" && <Confetti />}
+
+      <div className="text-center max-w-lg w-full relative z-10">
         {status === "loading" && (
           <>
             <div className="text-4xl mb-4">⏳</div>
@@ -86,21 +216,43 @@ function OdemeSonuc() {
         {status === "success" && (
           <div className="space-y-6">
             <div>
-              <div className="text-6xl mb-4">🎉</div>
-              <h1 className="text-2xl font-bold mb-2">Ödeme Başarılı!</h1>
+              <CheckmarkAnim />
+              <h1 className="text-3xl font-bold mb-2 text-green-400">Ödeme Başarılı!</h1>
               <p className="text-gray-400">
                 Piksel alanınız rezerve edildi. Logonuzu yükleyin, admin onayının ardından duvarınızda yerini alacak.
               </p>
             </div>
 
+            {/* Order summary */}
+            {pixelInfo && (
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 text-left">
+                <h2 className="font-semibold text-sm text-gray-400 uppercase tracking-wider mb-3">Sipariş Özeti</h2>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between text-gray-400">
+                    <span>Konum</span>
+                    <span className="text-white font-mono">({pixelInfo.x}, {pixelInfo.y})</span>
+                  </div>
+                  <div className="flex justify-between text-gray-400">
+                    <span>Boyut</span>
+                    <span className="text-white">{pixelInfo.width}×{pixelInfo.height} px</span>
+                  </div>
+                  <div className="flex justify-between text-gray-400 border-t border-gray-800 pt-2 mt-2">
+                    <span className="font-semibold text-white">Ödenen Tutar</span>
+                    <span className="text-green-400 font-bold">{pixelInfo.price.toLocaleString("tr-TR")} ₺</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Image upload section */}
             {pixelId && uploadStatus !== "success" && (
-              <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 text-left">
-                <h2 className="font-semibold text-lg mb-4">Logonuzu Yükleyin</h2>
+              <div className="bg-gray-900 rounded-2xl border border-indigo-800/50 p-6 text-left">
+                <h2 className="font-semibold text-lg mb-1">📸 Logo Yükle</h2>
+                <p className="text-gray-500 text-xs mb-4">Admin onayı için logonuzu yükleyin.</p>
 
                 <div
                   className={`border-2 border-dashed rounded-xl p-6 text-center transition cursor-pointer ${
-                    dragOver ? "border-indigo-500 bg-indigo-950/20" : "border-gray-700 hover:border-gray-600"
+                    dragOver ? "border-indigo-500 bg-indigo-950/20" : "border-gray-700 hover:border-indigo-600/50"
                   }`}
                   onClick={() => fileInputRef.current?.click()}
                   onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -143,7 +295,7 @@ function OdemeSonuc() {
                     disabled={uploadStatus === "loading"}
                     className="mt-4 w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 transition py-3 rounded-xl font-semibold"
                   >
-                    {uploadStatus === "loading" ? "Yükleniyor..." : "Logo Yükle"}
+                    {uploadStatus === "loading" ? "Yükleniyor..." : "Logo Yükle ↑"}
                   </button>
                 )}
 
@@ -168,14 +320,14 @@ function OdemeSonuc() {
             {/* Social sharing */}
             <div className="bg-gray-900 rounded-2xl border border-gray-800 p-5">
               <p className="text-sm text-gray-400 mb-3">Bunu arkadaşlarınla paylaş!</p>
-              <div className="flex gap-3 justify-center">
+              <div className="flex gap-3 justify-center flex-wrap">
                 <a
                   href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 bg-black hover:bg-gray-900 border border-gray-700 px-4 py-2.5 rounded-xl text-sm font-semibold transition"
                 >
-                  𝕏 Twitter&apos;da Paylaş
+                  𝕏 Twitter&apos;da paylaş
                 </a>
                 <a
                   href={`https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`}
@@ -183,7 +335,7 @@ function OdemeSonuc() {
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 bg-green-700 hover:bg-green-600 px-4 py-2.5 rounded-xl text-sm font-semibold transition"
                 >
-                  WhatsApp
+                  WhatsApp&apos;ta paylaş
                 </a>
               </div>
             </div>

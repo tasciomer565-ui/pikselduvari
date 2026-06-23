@@ -36,13 +36,13 @@ export interface Selection {
 
 // ─── Live purchase ticker ───────────────────────────────────────────────────
 const FAKE_PURCHASES = [
-  "⚡ Az önce: İstanbul&apos;dan 50×50 alan alındı · 2.500₺",
-  "⚡ Az önce: Ankara&apos;dan 20×20 alan · 400₺",
-  "⚡ Az önce: İzmir&apos;den 30×30 alan alındı · 900₺",
-  "⚡ Az önce: Antalya&apos;dan 100×50 alan · 5.000₺",
-  "⚡ Az önce: Gaziantep&apos;ten 40×40 alan · 1.600₺",
-  "⚡ Az önce: Bursa&apos;dan 10×10 alan · 100₺",
-  "⚡ Az önce: Trabzon&apos;dan 20×30 alan · 600₺",
+  "⚡ Az önce: İstanbul'dan 50×50 alan alındı · 2.500₺",
+  "⚡ Az önce: Ankara'dan 20×20 alan · 400₺",
+  "⚡ Az önce: İzmir'den 30×30 alan alındı · 900₺",
+  "⚡ Az önce: Antalya'dan 100×50 alan · 5.000₺",
+  "⚡ Az önce: Gaziantep'ten 40×40 alan · 1.600₺",
+  "⚡ Az önce: Bursa'dan 10×10 alan · 100₺",
+  "⚡ Az önce: Trabzon'dan 20×30 alan · 600₺",
 ];
 
 function LiveTicker() {
@@ -158,7 +158,7 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
 // ─── WhatsApp Chat Widget ─────────────────────────────────────────────────────
 function WhatsAppWidget() {
   const [open, setOpen] = useState(false);
-  const msg = encodeURIComponent("Merhaba! Piksel Duvarı hakkında bilgi almak istiyorum 🎯");
+  const msg = encodeURIComponent("Merhaba! Piksel Duvarı'nda reklam alanı almak istiyorum. Bilgi alabilir miyim? 🎯");
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
       {open && (
@@ -178,7 +178,7 @@ function WhatsAppWidget() {
             <button onClick={() => setOpen(false)} className="ml-auto text-gray-500 hover:text-white text-lg leading-none">×</button>
           </div>
           <div className="bg-gray-800 rounded-xl p-3 mb-3 text-sm text-gray-300">
-            Merhaba! Piksel Duvarı hakkında bilgi almak istiyorum 🎯
+            Merhaba! Piksel Duvarı&apos;nda reklam alanı almak istiyorum. Bilgi alabilir miyim? 🎯
           </div>
           <a
             href={`https://wa.me/905551663380?text=${msg}`}
@@ -629,6 +629,7 @@ export default function Home() {
   const { showToast } = useToast();
 
   const [viewport, setViewport] = useState({ x: 0, y: 0, w: 1000, h: 1000 });
+  const [zoomScale, setZoomScale] = useState(0.5);
 
   useEffect(() => {
     fetch("/api/pixels")
@@ -844,10 +845,26 @@ export default function Home() {
         <div className="flex flex-1 overflow-hidden">
           <div className="flex-1 relative" style={{ height: "calc(100vh - 110px)" }}>
             {loading ? (
-              <div className="absolute inset-0 flex items-center justify-center text-gray-600 gap-3 flex-col">
-                <div className="w-full h-full absolute inset-0 bg-gray-900 animate-pulse" />
-                <div className="w-7 h-7 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin relative z-10" />
-                <span className="text-sm relative z-10">Piksel haritası yükleniyor...</span>
+              <div className="absolute inset-0 overflow-hidden bg-gray-950">
+                {/* Shimmer skeleton grid */}
+                <div className="w-full h-full grid grid-cols-6 grid-rows-4 gap-2 p-4 opacity-30">
+                  {Array.from({ length: 24 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="rounded bg-gray-800"
+                      style={{
+                        background: "linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%)",
+                        backgroundSize: "200% 100%",
+                        animation: `shimmer 1.5s ${(i * 0.06).toFixed(2)}s infinite`,
+                      }}
+                    />
+                  ))}
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center flex-col gap-3">
+                  <div className="w-7 h-7 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-sm text-gray-500">Piksel haritası yükleniyor...</span>
+                </div>
+                <style>{`@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }`}</style>
               </div>
             ) : (
               <TransformWrapper
@@ -868,6 +885,7 @@ export default function Home() {
                     w: containerW / scale,
                     h: containerH / scale,
                   });
+                  setZoomScale(scale);
                 }}
               >
                 {({ zoomIn, zoomOut, resetTransform, setTransform }) => {
@@ -886,6 +904,9 @@ export default function Home() {
                     <>
                       <div className="absolute top-3 right-3 z-50 flex flex-col gap-1">
                         <button onClick={() => zoomIn()} className="w-8 h-8 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-white font-bold text-lg flex items-center justify-center">+</button>
+                        <div className="w-8 h-7 bg-gray-900 border border-gray-700 rounded-lg text-gray-300 text-[10px] flex items-center justify-center font-mono select-none">
+                          {Math.round(zoomScale * 100)}%
+                        </div>
                         <button onClick={() => zoomOut()} className="w-8 h-8 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-white font-bold text-lg flex items-center justify-center">−</button>
                         <button onClick={() => resetTransform()} className="w-8 h-8 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-gray-400 text-xs flex items-center justify-center" title="Sıfırla">↺</button>
                       </div>
@@ -1204,6 +1225,15 @@ export default function Home() {
         </div>
       </section>
 
+      {/* SEO content block */}
+      <section className="px-6 pb-4 max-w-3xl mx-auto">
+        <p className="text-gray-700 text-xs leading-relaxed text-center">
+          Piksel Duvarı, Türkiye&apos;nin ilk ve tek kalıcı piksel reklam platformudur.
+          İstanbul, Ankara, İzmir ve tüm Türkiye şehirlerinde dijital reklam alanı satın alın.
+          Tek seferlik ödeme ile sonsuza kadar görünür kalın.
+        </p>
+      </section>
+
       <PartnerLogos />
 
       {/* Final CTA */}
@@ -1249,6 +1279,8 @@ export default function Home() {
                   <a href="/fiyatlandirma" className="block text-gray-400 hover:text-white transition text-xs">Fiyatlar</a>
                   <a href="/istatistikler" className="block text-gray-400 hover:text-white transition text-xs">İstatistikler</a>
                   <a href="/referans" className="block text-gray-400 hover:text-white transition text-xs">Referans Programı</a>
+                  <a href="/hakkimizda" className="block text-gray-400 hover:text-white transition text-xs">Hakkımızda</a>
+                  <a href="/haberler" className="block text-gray-400 hover:text-white transition text-xs">Haberler</a>
                   <a href="/iletisim" className="block text-gray-400 hover:text-white transition text-xs">İletişim</a>
                 </div>
               </div>

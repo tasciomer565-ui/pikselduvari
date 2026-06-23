@@ -31,10 +31,21 @@ export async function POST(req: NextRequest) {
     price, status: "pending_payment", reserved_until: reservedUntil,
   });
 
-  // Iyzico ödeme linki oluştur
-  const paymentUrl = await createIyzicoPayment(id, price, owner_name);
+  // Ödeme linki oluştur
+  const paymentUrl = await createPaymentUrl(id, price, owner_name);
 
   return NextResponse.json({ reservation_id: id, price, payment_url: paymentUrl });
+}
+
+async function createPaymentUrl(conversationId: string, price: number, buyerName: string): Promise<string> {
+  const frontendUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://pikselduvari.vercel.app";
+
+  // Mock mode: no payment gateway configured
+  if (!process.env.IYZICO_API_KEY && !process.env.PAYTR_MERCHANT_ID) {
+    return `${frontendUrl}/odeme/sonuc?mock=true&id=${conversationId}`;
+  }
+
+  return createIyzicoPayment(conversationId, price, buyerName);
 }
 
 async function createIyzicoPayment(conversationId: string, price: number, buyerName: string): Promise<string> {
