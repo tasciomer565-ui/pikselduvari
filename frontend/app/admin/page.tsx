@@ -33,7 +33,7 @@ interface MetricDay {
   revenue: number;
 }
 
-type Tab = "dashboard" | "pending" | "all" | "analytics";
+type Tab = "dashboard" | "pending" | "all" | "analytics" | "emails";
 
 // ─── Revenue Chart (inline SVG) ───────────────────────────────────────────────
 function RevenueChart({ days }: { days: MetricDay[] }) {
@@ -149,6 +149,7 @@ export default function AdminPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [selectedPending, setSelectedPending] = useState<Set<string>>(new Set());
   const [analyticsData, setAnalyticsData] = useState<{ totalViews: number; topPages: { page: string; count: number }[] } | null>(null);
+  const [emails, setEmails] = useState<{ id: string; email: string; source: string; created_at: string }[]>([]);
   const [rejectModal, setRejectModal] = useState<Pixel | null>(null);
 
   const headers = { "x-admin-secret": secret };
@@ -221,9 +222,17 @@ export default function AdminPage() {
     }
   };
 
+  const loadEmails = async () => {
+    try {
+      const r = await axios.get("/api/admin/emails", { headers });
+      setEmails(r.data);
+    } catch { console.error("Emails yüklenemedi"); }
+  };
+
   useEffect(() => {
     if (authed && tab === "all") loadAll();
     if (authed && tab === "analytics") loadAnalytics();
+    if (authed && tab === "emails") loadEmails();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authed, tab, statusFilter]);
 
@@ -338,7 +347,7 @@ export default function AdminPage() {
           <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center text-xs font-bold">PD</div>
           <span className="font-semibold text-sm">Admin</span>
         </div>
-        {(["dashboard", "pending", "all", "analytics"] as Tab[]).map((t) => (
+        {(["dashboard", "pending", "all", "analytics", "emails"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -350,6 +359,7 @@ export default function AdminPage() {
             {t === "pending" && `Onay Bekleyen (${pending.length})`}
             {t === "all" && "Tüm Pikseller"}
             {t === "analytics" && "Analitik"}
+            {t === "emails" && `E-posta Listesi (${emails.length})`}
           </button>
         ))}
         <div className="mt-auto pt-4 border-t border-gray-800">
@@ -647,6 +657,50 @@ export default function AdminPage() {
               </>
             ) : (
               <div className="text-gray-600">Analitik veriler yükleniyor...</div>
+            )}
+          </div>
+        )}
+        {tab === "emails" && (
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-2xl font-bold">E-posta Listesi</h1>
+              <button
+                onClick={() => {
+                  const csv = ["Email,Kaynak,Tarih", ...emails.map(e => `${e.email},${e.source},${new Date(e.created_at).toLocaleDateString("tr-TR")}`)].join("\n");
+                  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = "email-listesi.csv"; a.click();
+                }}
+                className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-semibold transition"
+              >
+                CSV İndir ({emails.length})
+              </button>
+            </div>
+            {emails.length === 0 ? (
+              <div className="text-center py-16 text-gray-600">
+                <div className="text-4xl mb-3">📧</div>
+                <p>Henüz e-posta kaydı yok.</p>
+                <p className="text-sm mt-1">Supabase&apos;de email_subscribers tablosunu oluşturduğunuzda burada görünecek.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-800 text-left text-gray-500">
+                      <th className="pb-3 pr-4">E-posta</th>
+                      <th className="pb-3 pr-4">Kaynak</th>
+                      <th className="pb-3">Tarih</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {emails.map((e) => (
+                      <tr key={e.id} className="border-b border-gray-900 hover:bg-gray-900/50">
+                        <td className="py-3 pr-4 text-white">{e.email}</td>
+                        <td className="py-3 pr-4 text-gray-400">{e.source}</td>
+                        <td className="py-3 text-gray-500">{new Date(e.created_at).toLocaleDateString("tr-TR")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         )}
