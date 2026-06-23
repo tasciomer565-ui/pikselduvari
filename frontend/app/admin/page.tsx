@@ -33,7 +33,7 @@ interface MetricDay {
   revenue: number;
 }
 
-type Tab = "dashboard" | "pending" | "all" | "analytics" | "emails";
+type Tab = "dashboard" | "pending" | "all" | "analytics" | "emails" | "discounts";
 
 // ─── Revenue Chart (inline SVG) ───────────────────────────────────────────────
 function RevenueChart({ days }: { days: MetricDay[] }) {
@@ -150,6 +150,8 @@ export default function AdminPage() {
   const [selectedPending, setSelectedPending] = useState<Set<string>>(new Set());
   const [analyticsData, setAnalyticsData] = useState<{ totalViews: number; topPages: { page: string; count: number }[] } | null>(null);
   const [emails, setEmails] = useState<{ id: string; email: string; source: string; created_at: string }[]>([]);
+  const [discounts, setDiscounts] = useState<{ id: string; code: string; discount_percent: number; uses: number; max_uses: number | null; expires_at: string | null; active: boolean }[]>([]);
+  const [newDiscount, setNewDiscount] = useState({ code: "", discount_percent: "20", max_uses: "", expires_at: "" });
   const [rejectModal, setRejectModal] = useState<Pixel | null>(null);
 
   const headers = { "x-admin-secret": secret };
@@ -229,10 +231,32 @@ export default function AdminPage() {
     } catch { console.error("Emails yüklenemedi"); }
   };
 
+  const loadDiscounts = async () => {
+    try {
+      const r = await axios.get("/api/admin/discounts", { headers });
+      setDiscounts(r.data);
+    } catch { console.error("Discounts yüklenemedi"); }
+  };
+
+  const createDiscount = async () => {
+    if (!newDiscount.code || !newDiscount.discount_percent) return;
+    try {
+      await axios.post("/api/admin/discounts", newDiscount, { headers });
+      setNewDiscount({ code: "", discount_percent: "20", max_uses: "", expires_at: "" });
+      loadDiscounts();
+    } catch (e: unknown) { alert("Hata: " + (e as { response?: { data?: { error?: string } } }).response?.data?.error); }
+  };
+
+  const deleteDiscount = async (id: string) => {
+    await axios.delete("/api/admin/discounts", { headers, data: { id } });
+    loadDiscounts();
+  };
+
   useEffect(() => {
     if (authed && tab === "all") loadAll();
     if (authed && tab === "analytics") loadAnalytics();
     if (authed && tab === "emails") loadEmails();
+    if (authed && tab === "discounts") loadDiscounts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authed, tab, statusFilter]);
 
@@ -347,7 +371,7 @@ export default function AdminPage() {
           <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center text-xs font-bold">PD</div>
           <span className="font-semibold text-sm">Admin</span>
         </div>
-        {(["dashboard", "pending", "all", "analytics", "emails"] as Tab[]).map((t) => (
+        {(["dashboard", "pending", "all", "analytics", "emails", "discounts"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -360,6 +384,7 @@ export default function AdminPage() {
             {t === "all" && "Tüm Pikseller"}
             {t === "analytics" && "Analitik"}
             {t === "emails" && `E-posta Listesi (${emails.length})`}
+            {t === "discounts" && "İndirim Kodları"}
           </button>
         ))}
         <div className="mt-auto pt-4 border-t border-gray-800">
@@ -696,6 +721,110 @@ export default function AdminPage() {
                         <td className="py-3 pr-4 text-white">{e.email}</td>
                         <td className="py-3 pr-4 text-gray-400">{e.source}</td>
                         <td className="py-3 text-gray-500">{new Date(e.created_at).toLocaleDateString("tr-TR")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+        {tab === "discounts" && (
+          <div>
+            <h1 className="text-2xl font-bold mb-6">İndirim Kodları</h1>
+
+            {/* Yeni kod oluştur */}
+            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+              <h2 className="font-semibold mb-4">Yeni Kod Oluştur</h2>
+              <div className="grid sm:grid-cols-2 gap-3 mb-4">
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Kod (büyük harf)</label>
+                  <input
+                    type="text"
+                    value={newDiscount.code}
+                    onChange={e => setNewDiscount(p => ({ ...p, code: e.target.value.toUpperCase() }))}
+                    placeholder="HOSGELDIN20"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">İndirim Oranı (%)</label>
+                  <input
+                    type="number"
+                    value={newDiscount.discount_percent}
+                    onChange={e => setNewDiscount(p => ({ ...p, discount_percent: e.target.value }))}
+                    min={1} max={100}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Max Kullanım (boş = sınırsız)</label>
+                  <input
+                    type="number"
+                    value={newDiscount.max_uses}
+                    onChange={e => setNewDiscount(p => ({ ...p, max_uses: e.target.value }))}
+                    placeholder="50"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Son Kullanma Tarihi (boş = süresiz)</label>
+                  <input
+                    type="date"
+                    value={newDiscount.expires_at}
+                    onChange={e => setNewDiscount(p => ({ ...p, expires_at: e.target.value }))}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+              <button
+                onClick={createDiscount}
+                disabled={!newDiscount.code || !newDiscount.discount_percent}
+                className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 transition px-5 py-2 rounded-lg text-sm font-semibold"
+              >
+                Kodu Oluştur
+              </button>
+            </div>
+
+            {/* Kod listesi */}
+            {discounts.length === 0 ? (
+              <div className="text-center py-12 text-gray-600">
+                <div className="text-4xl mb-3">🎟️</div>
+                <p>Henüz indirim kodu yok. Yukarıdan oluşturun.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-800 text-left text-gray-500">
+                      <th className="pb-3 pr-4">Kod</th>
+                      <th className="pb-3 pr-4">İndirim</th>
+                      <th className="pb-3 pr-4">Kullanım</th>
+                      <th className="pb-3 pr-4">Son Tarih</th>
+                      <th className="pb-3 pr-4">Durum</th>
+                      <th className="pb-3"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {discounts.map((d) => (
+                      <tr key={d.id} className="border-b border-gray-900 hover:bg-gray-900/50">
+                        <td className="py-3 pr-4 font-mono font-bold text-white">{d.code}</td>
+                        <td className="py-3 pr-4 text-green-400 font-semibold">%{d.discount_percent}</td>
+                        <td className="py-3 pr-4 text-gray-400">{d.uses}{d.max_uses ? `/${d.max_uses}` : ""}</td>
+                        <td className="py-3 pr-4 text-gray-500 text-xs">{d.expires_at ? new Date(d.expires_at).toLocaleDateString("tr-TR") : "Süresiz"}</td>
+                        <td className="py-3 pr-4">
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${d.active ? "bg-green-900/50 text-green-400" : "bg-gray-800 text-gray-500"}`}>
+                            {d.active ? "Aktif" : "Pasif"}
+                          </span>
+                        </td>
+                        <td className="py-3">
+                          <button
+                            onClick={() => deleteDiscount(d.id)}
+                            className="text-xs text-red-400 hover:text-red-300 transition"
+                          >
+                            Devre Dışı
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

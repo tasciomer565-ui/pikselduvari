@@ -740,6 +740,7 @@ export default function Home() {
   const [panTarget, setPanTarget] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [coordInput, setCoordInput] = useState("");
+  const [brandSearch, setBrandSearch] = useState("");
   const [showSoldOverlay, setShowSoldOverlay] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [easterEgg, setEasterEgg] = useState(false);
@@ -934,6 +935,18 @@ export default function Home() {
             />
             <button onClick={handleCoordGo} className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-xs">Git</button>
           </div>
+          <div className="flex items-center gap-1">
+            <input
+              type="text"
+              placeholder="🔍 Marka ara..."
+              value={brandSearch}
+              onChange={(e) => setBrandSearch(e.target.value)}
+              className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white w-28 focus:border-indigo-500 focus:outline-none"
+            />
+            {brandSearch && (
+              <button onClick={() => setBrandSearch("")} className="text-gray-500 hover:text-white text-xs">✕</button>
+            )}
+          </div>
           <button
             onClick={() => setShowSoldOverlay(!showSoldOverlay)}
             className={`px-2 py-1 rounded text-xs border transition ${showSoldOverlay ? "bg-red-900/50 border-red-700 text-red-300" : "bg-gray-800 border-gray-700 text-gray-400"}`}
@@ -1037,6 +1050,7 @@ export default function Home() {
                           onRegion={setHoveredRegion}
                           selectable={true}
                           showSoldOverlay={showSoldOverlay}
+                          brandSearch={brandSearch}
                         />
                       </TransformComponent>
                     </>

@@ -14,6 +14,7 @@ interface Props {
   onRegion?: (name: string | null) => void;
   selectable?: boolean;
   showSoldOverlay?: boolean;
+  brandSearch?: string;
 }
 
 interface TooltipInfo {
@@ -22,7 +23,7 @@ interface TooltipInfo {
   y: number;
 }
 
-export default function PixelGrid({ pixels, selection, onSelect, onRegion, selectable = true, showSoldOverlay = false }: Props) {
+export default function PixelGrid({ pixels, selection, onSelect, onRegion, selectable = true, showSoldOverlay = false, brandSearch = "" }: Props) {
   const divRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
   const [startCell, setStartCell] = useState<{ x: number; y: number } | null>(null);
@@ -174,6 +175,16 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
           ))}
         </>
       )}
+
+      {/* Brand search highlight */}
+      {brandSearch && pixels.filter(p =>
+        p.owner_name?.toLowerCase().includes(brandSearch.toLowerCase()) ||
+        p.tooltip?.toLowerCase().includes(brandSearch.toLowerCase())
+      ).map(p => (
+        <div key={`hl-${p.id}`} className="absolute pointer-events-none animate-pulse"
+          style={{ left: p.x - 3, top: p.y - 3, width: p.width + 6, height: p.height + 6, border: "3px solid #f59e0b", borderRadius: 3, zIndex: 20, boxShadow: "0 0 12px rgba(245,158,11,0.8)" }}
+        />
+      ))}
 
       {/* 4. Satılmış pikseller */}
       {pixels.map((p) => (
