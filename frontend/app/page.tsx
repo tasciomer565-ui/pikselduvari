@@ -1361,6 +1361,41 @@ export default function Home() {
       {/* Email toplama */}
       <EmailCapture />
 
+      {/* Şehir Linkleri — SEO */}
+      <section className="px-6 py-16 border-t border-gray-800/50">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl font-bold mb-2">Şehrine Göre Alan Seç</h2>
+            <p className="text-gray-500 text-sm">Türkiye&apos;nin her şehrinde kalıcı dijital reklam alanı</p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { slug: "istanbul", name: "İstanbul", emoji: "🏙️", desc: "Türkiye'nin ekonomi merkezi" },
+              { slug: "ankara", name: "Ankara", emoji: "🏛️", desc: "Başkent & kurumsal" },
+              { slug: "izmir", name: "İzmir", emoji: "🌊", desc: "Ege'nin ticaret merkezi" },
+              { slug: "antalya", name: "Antalya", emoji: "🌴", desc: "Turizm başkenti" },
+              { slug: "bursa", name: "Bursa", emoji: "🏭", desc: "Sanayi & otomotiv" },
+              { slug: "gaziantep", name: "Gaziantep", emoji: "🌶️", desc: "Güneydoğu merkezi" },
+              { slug: "konya", name: "Konya", emoji: "🌾", desc: "İç Anadolu'nun kalbi" },
+              { slug: "adana", name: "Adana", emoji: "☀️", desc: "Çukurova'nın merkezi" },
+            ].map((city) => (
+              <a
+                key={city.slug}
+                href={`/sehir/${city.slug}`}
+                className="bg-gray-900 border border-gray-800 hover:border-indigo-700/60 hover:bg-indigo-950/20 rounded-xl p-4 transition group"
+              >
+                <div className="text-2xl mb-2">{city.emoji}</div>
+                <div className="font-semibold text-sm group-hover:text-indigo-300 transition">{city.name}</div>
+                <div className="text-gray-600 text-xs mt-1">{city.desc}</div>
+              </a>
+            ))}
+          </div>
+          <p className="text-center text-gray-600 text-xs mt-6">
+            Tüm Türkiye&apos;ye açık · 1 piksel = 1₺ · Tek seferlik ödeme
+          </p>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="px-6 py-20 text-center">
         <div className="max-w-2xl mx-auto bg-gradient-to-br from-indigo-950 to-purple-950 rounded-3xl border border-indigo-800/50 p-12">
@@ -1416,6 +1451,17 @@ export default function Home() {
                   <a href="/kullanim-sartlari" className="block text-gray-400 hover:text-white transition text-xs">Kullanım Şartları</a>
                   <a href="/cerez-politikasi" className="block text-gray-400 hover:text-white transition text-xs">Çerez Politikası</a>
                   <a href="/sss" className="block text-gray-400 hover:text-white transition text-xs">SSS</a>
+                </div>
+              </div>
+              <div>
+                <p className="text-gray-500 text-xs font-semibold uppercase mb-2">Şehirler</p>
+                <div className="space-y-2">
+                  <a href="/sehir/istanbul" className="block text-gray-400 hover:text-white transition text-xs">İstanbul</a>
+                  <a href="/sehir/ankara" className="block text-gray-400 hover:text-white transition text-xs">Ankara</a>
+                  <a href="/sehir/izmir" className="block text-gray-400 hover:text-white transition text-xs">İzmir</a>
+                  <a href="/sehir/antalya" className="block text-gray-400 hover:text-white transition text-xs">Antalya</a>
+                  <a href="/sehir/bursa" className="block text-gray-400 hover:text-white transition text-xs">Bursa</a>
+                  <a href="/sehir/gaziantep" className="block text-gray-400 hover:text-white transition text-xs">Gaziantep</a>
                 </div>
               </div>
               <div>

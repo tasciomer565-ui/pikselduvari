@@ -267,6 +267,23 @@ export default async function SehirPage({ params }: { params: Promise<{ sehir: s
           </div>
         </div>
 
+        {/* Blog linkleri */}
+        <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 mb-8">
+          <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-3">Faydalı Yazılar</p>
+          <div className="flex flex-col gap-2">
+            {[
+              { href: "/haberler/seo-icin-piksel-reklam", label: "Piksel Reklam SEO'nuzu Nasıl Güçlendirir?" },
+              { href: "/haberler/kucuk-isletmeler-icin-dijital-reklam", label: "En Uygun Dijital Reklam: Piksel mi, Sosyal Medya mı?" },
+              { href: "/haberler/piksel-duvari-vs-billboard", label: "Piksel Reklam vs. Billboard: Hangisi Daha Karlı?" },
+              { href: "/haberler/marka-gorunurlugu-neden-onemli", label: "Marka Görünürlüğü Neden Bu Kadar Önemli?" },
+            ].map((l) => (
+              <Link key={l.href} href={l.href} className="text-xs text-gray-400 hover:text-indigo-300 transition flex items-center gap-2">
+                <span className="text-indigo-600">→</span> {l.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {/* CTA */}
         <div className="bg-gradient-to-br from-indigo-950 to-purple-950 border border-indigo-800/40 rounded-2xl p-8 text-center">
           <h3 className="text-2xl font-bold mb-2">{data.name}&apos;da Yerinizi Ayırtın</h3>

@@ -129,9 +129,30 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </Link>
         </div>
 
+        {/* Şehir Linkleri */}
+        <div className="mt-10 bg-gray-900/50 border border-gray-800 rounded-2xl p-5">
+          <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-3">Şehrine Göre Alan Seç</p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { slug: "istanbul", name: "İstanbul" },
+              { slug: "ankara", name: "Ankara" },
+              { slug: "izmir", name: "İzmir" },
+              { slug: "antalya", name: "Antalya" },
+              { slug: "bursa", name: "Bursa" },
+              { slug: "gaziantep", name: "Gaziantep" },
+              { slug: "konya", name: "Konya" },
+              { slug: "adana", name: "Adana" },
+            ].map((c) => (
+              <Link key={c.slug} href={`/sehir/${c.slug}`} className="text-xs bg-gray-800 hover:bg-indigo-900/50 hover:text-indigo-300 text-gray-400 px-3 py-1.5 rounded-full transition">
+                {c.name} Piksel Reklam
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {/* Related */}
         {relatedPosts.length > 0 && (
-          <div className="mt-12">
+          <div className="mt-10">
             <h2 className="font-bold text-lg mb-5">İlgili Yazılar</h2>
             <div className="grid gap-4">
               {relatedPosts.map((rp) => (

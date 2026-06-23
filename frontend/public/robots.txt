@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://pikselduvari.com/sitemap.xml
+
+# Admin ve API erişimi engelle
+Disallow: /admin
+Disallow: /api/
+Disallow: /_next/
+Disallow: /odeme/
