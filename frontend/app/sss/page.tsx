@@ -140,7 +140,46 @@ export default function SSSPage() {
           <p className="text-gray-400 text-sm mb-4">Sorunuzu burada bulamadınız mı?</p>
           <div className="flex gap-3 justify-center flex-wrap">
             <a href="https://wa.me/905551663380" target="_blank" rel="noopener noreferrer" className="bg-green-700 hover:bg-green-600 transition px-5 py-2.5 rounded-xl text-sm font-semibold">WhatsApp ile Sor</a>
-            <a href="/iletisim" className="bg-gray-700 hover:bg-gray-600 transition px-5 py-2.5 rounded-xl text-sm font-semibold">İletişim Formu</a>
+            <Link href="/iletisim" className="bg-gray-700 hover:bg-gray-600 transition px-5 py-2.5 rounded-xl text-sm font-semibold">İletişim Formu</Link>
+          </div>
+        </div>
+
+        {/* İlgili İçerikler */}
+        <div className="mt-8 bg-gray-900/50 border border-gray-800 rounded-2xl p-5">
+          <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-3">Daha Fazla Bilgi</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              { href: "/haberler/piksel-reklamlarin-avantajlari", label: "📖 Piksel Reklamların Avantajları" },
+              { href: "/haberler/dijital-reklam-maliyetleri-karsilastirma", label: "💰 Reklam Maliyet Karşılaştırması" },
+              { href: "/basari-hikayeleri", label: "🏆 Başarı Hikayeleri" },
+              { href: "/referans", label: "🤝 Referans Programı" },
+            ].map((l) => (
+              <Link key={l.href} href={l.href} className="bg-gray-800 hover:bg-gray-700 transition rounded-xl px-4 py-3 text-sm text-gray-300 hover:text-white">
+                {l.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Şehir Sayfaları */}
+        <div className="mt-6 bg-gray-900/50 border border-gray-800 rounded-2xl p-5">
+          <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-3">Şehrine Göre Piksel Reklam</p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { slug: "istanbul", name: "İstanbul" },
+              { slug: "ankara", name: "Ankara" },
+              { slug: "izmir", name: "İzmir" },
+              { slug: "antalya", name: "Antalya" },
+              { slug: "bursa", name: "Bursa" },
+              { slug: "gaziantep", name: "Gaziantep" },
+            ].map((c) => (
+              <Link key={c.slug} href={`/sehir/${c.slug}`} className="text-xs bg-gray-800 hover:bg-indigo-900/50 hover:text-indigo-300 text-gray-400 px-3 py-1.5 rounded-full transition">
+                {c.name}
+              </Link>
+            ))}
+            <Link href="/sehirler" className="text-xs bg-indigo-900/30 text-indigo-400 hover:bg-indigo-900/60 px-3 py-1.5 rounded-full transition">
+              Tüm Şehirler →
+            </Link>
           </div>
         </div>
       </main>

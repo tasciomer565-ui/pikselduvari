@@ -9,10 +9,20 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://pikselduvari.com/haberler" },
 };
 
+const breadcrumbLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Ana Sayfa", item: "https://pikselduvari.com" },
+    { "@type": "ListItem", position: 2, name: "Haberler & Blog", item: "https://pikselduvari.com/haberler" },
+  ],
+};
+
 export default function HaberlerPage() {
   const sorted = [...posts].reverse();
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <nav className="border-b border-gray-800/50 px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-7 h-7 rounded bg-indigo-600 flex items-center justify-center text-xs font-bold">PD</div>
@@ -69,6 +79,32 @@ export default function HaberlerPage() {
               </article>
             </Link>
           ))}
+        </div>
+
+        {/* Şehir linkleri — iç SEO */}
+        <div className="mt-10 bg-gray-900/50 border border-gray-800 rounded-2xl p-5">
+          <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-3">Şehrine Göre Piksel Reklam</p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { slug: "istanbul", name: "İstanbul" },
+              { slug: "ankara", name: "Ankara" },
+              { slug: "izmir", name: "İzmir" },
+              { slug: "antalya", name: "Antalya" },
+              { slug: "bursa", name: "Bursa" },
+              { slug: "gaziantep", name: "Gaziantep" },
+              { slug: "konya", name: "Konya" },
+              { slug: "adana", name: "Adana" },
+              { slug: "kayseri", name: "Kayseri" },
+              { slug: "mersin", name: "Mersin" },
+            ].map((c) => (
+              <Link key={c.slug} href={`/sehir/${c.slug}`} className="text-xs bg-gray-800 hover:bg-indigo-900/50 hover:text-indigo-300 text-gray-400 px-3 py-1.5 rounded-full transition">
+                {c.name} Piksel Reklam
+              </Link>
+            ))}
+            <Link href="/sehirler" className="text-xs bg-indigo-900/30 hover:bg-indigo-900/60 text-indigo-400 px-3 py-1.5 rounded-full transition">
+              Tüm 81 İl →
+            </Link>
+          </div>
         </div>
 
         <div className="mt-12 bg-indigo-950/30 border border-indigo-900/40 rounded-2xl p-8 text-center">

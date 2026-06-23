@@ -38,11 +38,22 @@ export default async function SehirPage({ params }: { params: Promise<{ sehir: s
     publisher: { "@type": "Organization", name: "Piksel Duvarı", url: "https://pikselduvari.com" },
   };
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Ana Sayfa", item: "https://pikselduvari.com" },
+      { "@type": "ListItem", position: 2, name: "Tüm Şehirler", item: "https://pikselduvari.com/sehirler" },
+      { "@type": "ListItem", position: 3, name: `${data.name} Piksel Reklam`, item: `https://pikselduvari.com/sehir/${data.slug}` },
+    ],
+  };
+
   const otherCities = sehirler.filter((s) => s.slug !== data.slug).sort(() => Math.random() - 0.5).slice(0, 8);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <nav className="border-b border-gray-800/50 px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-7 h-7 rounded bg-indigo-600 flex items-center justify-center text-xs font-bold">PD</div>
