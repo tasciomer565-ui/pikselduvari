@@ -1,10 +1,70 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import axios from "axios";
 import { ArrowLeft, ShoppingCart, Lock, CheckCircle, Shield, Globe } from "lucide-react";
 import { getRegionAt } from "@/lib/regions";
+
+// ─── Reservation Timer ────────────────────────────────────────────────────────
+function ReservationTimer() {
+  const [seconds, setSeconds] = useState(15 * 60); // 15 minutes
+  useEffect(() => {
+    const t = setInterval(() => setSeconds((s) => Math.max(0, s - 1)), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  const urgent = seconds < 120;
+  return (
+    <div className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold border ${urgent ? "bg-red-950/50 border-red-800/50 text-red-300" : "bg-orange-950/30 border-orange-800/30 text-orange-300"}`}>
+      <span className={`w-2 h-2 rounded-full ${urgent ? "bg-red-400 animate-ping" : "bg-orange-400 animate-pulse"}`} />
+      ⏱️ Seçtiğiniz alan{" "}
+      <span className="font-mono text-white">{mins}:{secs.toString().padStart(2, "0")}</span>
+      {" "}rezerve tutulmaktadır
+    </div>
+  );
+}
+
+// ─── Viewer Counter ────────────────────────────────────────────────────────────
+function ViewerCounter() {
+  const [count] = useState(() => Math.floor(Math.random() * 12) + 3);
+  return (
+    <div className="flex items-center gap-1.5 text-xs text-gray-500">
+      <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+      Bu alanı <strong className="text-gray-300 mx-1">{count}</strong> kişi inceledi
+    </div>
+  );
+}
+
+// ─── Quick FAQs ───────────────────────────────────────────────────────────────
+function QuickFAQs() {
+  const [open, setOpen] = useState<number | null>(null);
+  const items = [
+    { q: "Ödeme onaylandıktan ne kadar sonra yayına girer?", a: "Admin onayı genellikle 24 saat içinde yapılır. Onaydan sonra dakikalar içinde alanınız canlıya alınır." },
+    { q: "Logo yüklemeden alan satın alabilir miyim?", a: "Evet! Önce alanı satın alın, sonra size e-posta ile gönderilen bağlantıdan logo yükleyebilirsiniz." },
+    { q: "Para iadesi mümkün mü?", a: "30 gün içinde, eğer alanınız henüz yayına girmemişse tam iade yapılır. Yayına giren alanlar için iade yapılmamaktadır." },
+  ];
+  return (
+    <div className="mt-8 space-y-2">
+      <h3 className="text-sm font-semibold text-gray-400 mb-3">Sık Sorulan Sorular</h3>
+      {items.map((item, i) => (
+        <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+          <button
+            onClick={() => setOpen(open === i ? null : i)}
+            className="w-full text-left px-4 py-3 text-sm font-medium flex justify-between items-center hover:bg-gray-800/50 transition"
+          >
+            {item.q}
+            <span className="text-gray-500 ml-2 shrink-0">{open === i ? "−" : "+"}</span>
+          </button>
+          {open === i && (
+            <div className="px-4 pb-3 text-sm text-gray-400 leading-relaxed">{item.a}</div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 // ─── Progress Steps ───────────────────────────────────────────────────────────
 function ProgressSteps({ step }: { step: 1 | 2 | 3 }) {
@@ -239,6 +299,10 @@ function SatinAlForm() {
             <span className="font-semibold">Toplam</span>
             <span className="text-2xl font-bold text-indigo-400">{price.toLocaleString("tr-TR")} ₺</span>
           </div>
+          <div className="mt-3 space-y-2">
+            <ReservationTimer />
+            <ViewerCounter />
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -364,9 +428,11 @@ function SatinAlForm() {
           </div>
           <div className="flex items-center gap-2 text-xs text-gray-600">
             <CheckCircle size={12} />
-            30 gün içinde memnun kalmazsan ücret iadesi
+            💯 Para İadesi Garantisi — 30 gün içinde tam iade
           </div>
         </div>
+
+        <QuickFAQs />
       </div>
     </main>
   );

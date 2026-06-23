@@ -387,7 +387,7 @@ export default function AdminPage() {
 
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mt-6">
               <h2 className="font-semibold mb-3">Hızlı İşlemler</h2>
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-wrap">
                 <button
                   onClick={() => setTab("pending")}
                   className="bg-yellow-700 hover:bg-yellow-600 px-4 py-2 rounded-lg text-sm font-semibold"
@@ -399,6 +399,22 @@ export default function AdminPage() {
                   className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm font-semibold"
                 >
                   Tüm Pikseller
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!confirm("Demo pikseller eklenecek. Devam?")) return;
+                    try {
+                      const res = await axios.post("/api/admin/seed", {}, { headers });
+                      alert(`✅ ${res.data.count} demo piksel eklendi!`);
+                      loadStats();
+                    } catch (e: unknown) {
+                      const err = e as { response?: { data?: { error?: string } } };
+                      alert("Hata: " + (err.response?.data?.error || "Bilinmeyen hata"));
+                    }
+                  }}
+                  className="bg-indigo-800 hover:bg-indigo-700 px-4 py-2 rounded-lg text-sm font-semibold"
+                >
+                  🎯 Toplu Demo Piksel Ekle
                 </button>
               </div>
             </div>

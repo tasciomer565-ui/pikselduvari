@@ -4,6 +4,10 @@ import "./globals.css";
 import CookieBanner from "@/components/CookieBanner";
 import { ToastProvider } from "@/components/Toast";
 import PageViewTracker from "@/components/PageViewTracker";
+import Script from "next/script";
+
+// GA4 Measurement ID — replace G-XXXXXXXXXX with your actual GA4 ID
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "G-XXXXXXXXXX";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -109,6 +113,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrg) }}
         />
       </head>
+      {/* Google Analytics 4 — replace GA_ID with your actual measurement ID */}
+      <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+      <Script id="ga4-init" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${GA_ID}');
+        `}
+      </Script>
       <body
         className={`${inter.className} min-h-full flex flex-col bg-gray-950 text-white antialiased`}
       >
