@@ -580,6 +580,18 @@ export default function AdminPage() {
                         <td className="py-3 text-gray-500">
                           {p.created_at ? new Date(p.created_at).toLocaleDateString("tr-TR") : "-"}
                         </td>
+                        <td className="py-3">
+                          <button
+                            onClick={async () => {
+                              if (!confirm(`"${p.owner_name}" pikselini silmek istediğinize emin misiniz?`)) return;
+                              await axios.delete(`/api/admin/delete/${p.id}`, { headers });
+                              setAllPixels(prev => prev.filter(x => x.id !== p.id));
+                            }}
+                            className="bg-red-900/50 hover:bg-red-800 text-red-300 px-3 py-1 rounded text-xs transition"
+                          >
+                            Sil
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
