@@ -161,7 +161,7 @@ function SponsorBanner() {
   const waMsg = encodeURIComponent("Merhaba! Piksel Duvarı'nda sponsorlu reklam alanı almak istiyorum. Fiyat bilgisi alabilir miyim?");
   if (!visible) return null;
   return (
-    <div className="fixed bottom-24 left-6 z-40 max-w-xs">
+    <div className="fixed top-20 right-6 z-40 max-w-xs">
       <div className="bg-gray-900 border border-indigo-500/40 rounded-2xl shadow-2xl overflow-hidden">
         <div className="bg-gradient-to-r from-indigo-600/20 to-purple-600/20 px-4 py-2 flex items-center justify-between border-b border-indigo-500/20">
           <span className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Sponsorlu Alan</span>
@@ -1343,7 +1343,7 @@ export default function Home() {
           </div>
           <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
             <span>Piksel Duvarı © 2025 — Her piksel sonsuza kadar senin. 🇹🇷</span>
-            <a href="/admin" className="hover:text-gray-400 transition">Admin</a>
+            <span className="text-gray-800">pikselduvari.com</span>
           </div>
         </div>
       </footer>

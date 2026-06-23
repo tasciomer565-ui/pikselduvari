@@ -16,10 +16,10 @@ interface Props {
 const PIXEL_PRICE = 1;
 
 const PRESETS = [
-  { label: "10×10", w: 10, h: 10, price: "100₺" },
   { label: "20×20", w: 20, h: 20, price: "400₺" },
   { label: "50×50", w: 50, h: 50, price: "2.500₺" },
   { label: "100×100", w: 100, h: 100, price: "10.000₺" },
+  { label: "200×200", w: 200, h: 200, price: "40.000₺" },
 ];
 
 export default function SelectionPanel({ selection, onClose, onPreset }: Props) {
