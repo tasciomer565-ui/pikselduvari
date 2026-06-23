@@ -169,7 +169,7 @@ export default function HakkimizdaPage() {
           <p className="text-gray-400 text-sm mb-4">Basın ve medya sorularınız için</p>
           <div className="flex gap-3 justify-center flex-wrap">
             <Link href="/basin" className="bg-gray-700 hover:bg-gray-600 transition px-5 py-2.5 rounded-xl text-sm font-semibold">📰 Basın Odası</Link>
-            <a href="mailto:basin@pikselduvari.com" className="border border-gray-700 hover:border-gray-500 text-gray-300 transition px-5 py-2.5 rounded-xl text-sm font-semibold">basin@pikselduvari.com</a>
+            <a href="mailto:info@pikselduvari.com" className="border border-gray-700 hover:border-gray-500 text-gray-300 transition px-5 py-2.5 rounded-xl text-sm font-semibold">info@pikselduvari.com</a>
           </div>
         </div>
       </main>
