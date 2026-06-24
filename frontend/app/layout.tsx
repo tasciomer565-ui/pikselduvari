@@ -4,6 +4,8 @@ import "./globals.css";
 import CookieBanner from "@/components/CookieBanner";
 import { ToastProvider } from "@/components/Toast";
 import PageViewTracker from "@/components/PageViewTracker";
+import WhatsAppFloat from "@/components/WhatsAppFloat";
+import ExitIntent from "@/components/ExitIntent";
 import Script from "next/script";
 
 // GA4 Measurement ID — replace G-XXXXXXXXXX with your actual GA4 ID
@@ -96,10 +98,36 @@ const jsonLdOrg = {
   },
 };
 
+const jsonLdFaq = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    { "@type": "Question", name: "Piksel Duvarı nedir?", acceptedAnswer: { "@type": "Answer", text: "Piksel Duvarı, Türkiye haritası üzerinde piksel tabanlı kalıcı dijital reklam platformudur. 1 piksel = 1₺ fiyatıyla alan satın alınır ve marka sonsuza kadar haritada görünür." } },
+    { "@type": "Question", name: "Piksel reklam ne kadar süre yayında kalır?", acceptedAnswer: { "@type": "Answer", text: "Sonsuza kadar. Tek seferlik ödeme yapılır, süre sınırı yoktur. Ödeme yapıldıktan sonra alan size aittir." } },
+    { "@type": "Question", name: "Minimum kaç piksel satın alınabilir?", acceptedAnswer: { "@type": "Answer", text: "Minimum 10×10 piksel (100₺) satın alınabilir. Daha büyük alanlar için 20×20, 50×50, 100×100 seçenekleri mevcuttur." } },
+    { "@type": "Question", name: "Ödeme yaptıktan sonra ne zaman yayına girer?", acceptedAnswer: { "@type": "Answer", text: "Ödeme onaylandıktan sonra 24 saat içinde logonuz haritada yayına girer." } },
+    { "@type": "Question", name: "Görselimi sonradan değiştirebilir miyim?", acceptedAnswer: { "@type": "Answer", text: "Evet, alan size ait olduğu sürece görselinizi istediğiniz zaman güncelleyebilirsiniz." } },
+  ],
+};
+
+const jsonLdService = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "Piksel Reklam Hizmeti",
+  provider: { "@type": "Organization", name: "Piksel Duvarı", url: "https://pikselduvari.com" },
+  description: "Türkiye haritası üzerinde kalıcı piksel reklam alanı kiralama hizmeti. Bir kez öde, sonsuza kadar görün.",
+  areaServed: { "@type": "Country", name: "Türkiye" },
+  serviceType: "Dijital Reklam",
+  offers: { "@type": "Offer", price: "100", priceCurrency: "TRY", description: "10×10 piksel alan — başlangıç fiyatı" },
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="tr" className="h-full">
       <head>
+        <link rel="alternate" hrefLang="tr" href="https://pikselduvari.com" />
+        <link rel="alternate" hrefLang="tr-TR" href="https://pikselduvari.com" />
+        <link rel="alternate" hrefLang="x-default" href="https://pikselduvari.com" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebsite) }}
@@ -111,6 +139,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrg) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdFaq) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdService) }}
         />
       </head>
       {/* Google AdSense */}
@@ -141,6 +177,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <PageViewTracker />
           {children}
           <CookieBanner />
+          <WhatsAppFloat />
+          <ExitIntent />
         </ToastProvider>
       </body>
     </html>
