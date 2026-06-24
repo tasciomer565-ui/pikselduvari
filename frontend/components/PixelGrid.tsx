@@ -25,15 +25,14 @@ interface TooltipInfo {
 
 export default function PixelGrid({ pixels, selection, onSelect, onRegion, selectable = true, showSoldOverlay = false, brandSearch = "" }: Props) {
   const divRef = useRef<HTMLDivElement>(null);
-  const [dragging, setDragging] = useState(false);
-  const [startCell, setStartCell] = useState<{ x: number; y: number } | null>(null);
+  const clickStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
   const [hovered, setHovered] = useState<{ x: number; y: number } | null>(null);
   const [tooltip, setTooltip] = useState<TooltipInfo | null>(null);
 
-  // Sağ tık → context menu engelle
   const handleContextMenu = (e: React.MouseEvent) => e.preventDefault();
 
-  const getCellFromEvent = useCallback((e: React.MouseEvent) => {
+  const getCellFromEvent = useCallback((e: { clientX: number; clientY: number }) => {
     if (!divRef.current) return null;
     const rect = divRef.current.getBoundingClientRect();
     const scaleX = GRID_SIZE / rect.width;
@@ -45,15 +44,22 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
     return { x: cellX, y: cellY };
   }, []);
 
+  // Click detection: record on mousedown, place selection on mouseup if minimal movement
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!selectable) return;
-    if (e.ctrlKey || e.metaKey) return; // Ctrl+sürükle = pan, seçim yapma
-    e.preventDefault();
-    const cell = getCellFromEvent(e);
-    if (!cell) return;
-    setDragging(true);
-    setStartCell(cell);
-    onSelect({ x: cell.x, y: cell.y, width: BLOCK, height: BLOCK });
+    clickStartRef.current = { x: e.clientX, y: e.clientY, time: Date.now() };
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (!selectable || !clickStartRef.current) return;
+    const dx = Math.abs(e.clientX - clickStartRef.current.x);
+    const dy = Math.abs(e.clientY - clickStartRef.current.y);
+    const dt = Date.now() - clickStartRef.current.time;
+    clickStartRef.current = null;
+    if (dx < 8 && dy < 8 && dt < 500) {
+      const cell = getCellFromEvent(e);
+      if (cell) onSelect({ x: cell.x, y: cell.y, width: BLOCK, height: BLOCK });
+    }
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -61,57 +67,43 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
     if (!cell) return;
     setHovered(cell);
     onRegion?.(getRegionAt(cell.x, cell.y)?.name ?? null);
-    if (!dragging || !startCell) return;
-    const x = Math.min(startCell.x, cell.x);
-    const y = Math.min(startCell.y, cell.y);
-    const w = Math.max(startCell.x, cell.x) - x + BLOCK;
-    const h = Math.max(startCell.y, cell.y) - y + BLOCK;
-    onSelect({ x, y, width: w, height: h });
   };
 
-  const handleMouseUp = () => setDragging(false);
-  const handleMouseLeave = () => { setDragging(false); setHovered(null); onRegion?.(null); };
+  const handleMouseLeave = () => { setHovered(null); onRegion?.(null); };
 
-  const getCellFromTouch = useCallback((touch: React.Touch) => {
-    if (!divRef.current) return null;
-    const rect = divRef.current.getBoundingClientRect();
-    const scaleX = GRID_SIZE / rect.width;
-    const scaleY = GRID_SIZE / rect.height;
-    const rawX = (touch.clientX - rect.left) * scaleX;
-    const rawY = (touch.clientY - rect.top) * scaleY;
-    const cellX = Math.max(0, Math.min(GRID_SIZE - BLOCK, Math.floor(rawX / BLOCK) * BLOCK));
-    const cellY = Math.max(0, Math.min(GRID_SIZE - BLOCK, Math.floor(rawY / BLOCK) * BLOCK));
-    return { x: cellX, y: cellY };
-  }, []);
-
+  // Touch: tap to select (minimal movement), pan is handled by TransformWrapper
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!selectable || e.touches.length !== 1) return;
-    e.preventDefault();
-    const cell = getCellFromTouch(e.touches[0]);
-    if (!cell) return;
-    setDragging(true);
-    setStartCell(cell);
-    onSelect({ x: cell.x, y: cell.y, width: BLOCK, height: BLOCK });
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, time: Date.now() };
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!dragging || !startCell || e.touches.length !== 1) return;
-    e.preventDefault();
-    const cell = getCellFromTouch(e.touches[0]);
-    if (!cell) return;
-    const x = Math.min(startCell.x, cell.x);
-    const y = Math.min(startCell.y, cell.y);
-    const w = Math.max(startCell.x, cell.x) - x + BLOCK;
-    const h = Math.max(startCell.y, cell.y) - y + BLOCK;
-    onSelect({ x, y, width: w, height: h });
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!selectable || !touchStartRef.current || e.changedTouches.length === 0) return;
+    const touch = e.changedTouches[0];
+    const dx = Math.abs(touch.clientX - touchStartRef.current.x);
+    const dy = Math.abs(touch.clientY - touchStartRef.current.y);
+    const dt = Date.now() - touchStartRef.current.time;
+    touchStartRef.current = null;
+    if (dx < 15 && dy < 15 && dt < 400) {
+      const cell = getCellFromEvent({ clientX: touch.clientX, clientY: touch.clientY });
+      if (cell) onSelect({ x: cell.x, y: cell.y, width: BLOCK, height: BLOCK });
+    }
   };
 
-  const handleTouchEnd = () => setDragging(false);
+  // Move selection with arrow buttons
+  const moveSelection = (dx: number, dy: number) => {
+    if (!selection) return;
+    const nx = Math.max(0, Math.min(GRID_SIZE - selection.width, selection.x + dx));
+    const ny = Math.max(0, Math.min(GRID_SIZE - selection.height, selection.y + dy));
+    onSelect({ ...selection, x: nx, y: ny });
+  };
+
+  const btnClass = "absolute flex items-center justify-center bg-gray-900/90 border border-gray-600 text-white font-bold rounded-lg shadow-lg hover:bg-indigo-600 hover:border-indigo-500 transition select-none";
 
   return (
     <div
       ref={divRef}
-      className={`relative select-none ${selectable ? "cursor-crosshair" : "cursor-grab active:cursor-grabbing"}`}
+      className="relative select-none cursor-grab active:cursor-grabbing"
       style={{ width: GRID_SIZE, height: GRID_SIZE, background: "#0f172a" }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
@@ -119,10 +111,9 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
       onMouseLeave={handleMouseLeave}
       onContextMenu={handleContextMenu}
       onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* 1. Bölge renk katmanı (alt) */}
+      {/* 1. Bölge renk katmanı */}
       {REGIONS.map((r) => (
         <div
           key={r.id}
@@ -136,28 +127,25 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
         />
       ))}
 
-      {/* 2. Bölge sınır çizgileri (SVG) */}
+      {/* 2. Bölge sınır çizgileri */}
       <svg
         className="absolute inset-0 pointer-events-none"
         width={GRID_SIZE}
         height={GRID_SIZE}
         style={{ zIndex: 2 }}
       >
-        {/* 50px'de bir belirgin çizgi (5 blok = 1 süper blok) */}
         {Array.from({ length: GRID_SIZE / 50 + 1 }, (_, i) => i * 50).map((pos) => (
           <g key={pos}>
             <line x1={pos} y1={0} x2={pos} y2={GRID_SIZE} stroke="rgba(255,255,255,0.12)" strokeWidth="0.5" />
             <line x1={0} y1={pos} x2={GRID_SIZE} y2={pos} stroke="rgba(255,255,255,0.12)" strokeWidth="0.5" />
           </g>
         ))}
-        {/* 100px'de bir kalın çizgi */}
         {Array.from({ length: GRID_SIZE / 100 + 1 }, (_, i) => i * 100).map((pos) => (
           <g key={`big-${pos}`}>
             <line x1={pos} y1={0} x2={pos} y2={GRID_SIZE} stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
             <line x1={0} y1={pos} x2={GRID_SIZE} y2={pos} stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
           </g>
         ))}
-        {/* Bölge sınırları */}
         {REGIONS.map((r) => (
           <rect
             key={`border-${r.id}`}
@@ -199,12 +187,10 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
         </div>
       ))}
 
-      {/* 3b. Sold/Available overlay */}
+      {/* Sold/Available overlay */}
       {showSoldOverlay && (
         <>
-          {/* Green = available (full grid) */}
           <div className="absolute inset-0 pointer-events-none" style={{ background: "rgba(34,197,94,0.15)", zIndex: 4 }} />
-          {/* Red = sold pixels */}
           {pixels.map((p) => (
             <div
               key={`overlay-${p.id}`}
@@ -235,6 +221,7 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
           className="absolute block overflow-hidden hover:opacity-80 transition-opacity"
           style={{ left: p.x, top: p.y, width: p.width, height: p.height, zIndex: 5 }}
           onMouseDown={(e) => e.stopPropagation()}
+          onMouseUp={(e) => e.stopPropagation()}
           onMouseEnter={(e) => {
             const rect = divRef.current?.getBoundingClientRect();
             if (!rect) return;
@@ -271,7 +258,6 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
                 borderLeft: `2px solid rgba(255,255,255,0.3)`,
               }}
             >
-              {/* Parıltı efekti */}
               <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
               {p.width >= 50 && (
                 <span className="text-white/80 font-bold text-center px-1 leading-tight drop-shadow z-10"
@@ -314,7 +300,7 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
       )}
 
       {/* 5. Hover highlight */}
-      {hovered && !dragging && (
+      {hovered && (
         <div
           className="absolute pointer-events-none"
           style={{
@@ -326,10 +312,10 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
         />
       )}
 
-      {/* 6. Seçim */}
+      {/* 6. Seçim + yön okları */}
       {selection && (
         <div
-          className="absolute pointer-events-none"
+          className="absolute"
           style={{
             left: selection.x, top: selection.y,
             width: selection.width, height: selection.height,
@@ -337,9 +323,13 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
             background: "rgba(250,204,21,0.18)",
             zIndex: 15,
           }}
+          onMouseDown={(e) => e.stopPropagation()}
+          onMouseUp={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
         >
           {/* Etiket */}
           <div
+            className="pointer-events-none"
             style={{
               position: "absolute",
               top: selection.y > 25 ? -24 : 4,
@@ -354,19 +344,48 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
               boxShadow: "0 2px 6px rgba(0,0,0,0.5)",
             }}
           >
-            {selection.width}×{selection.height} · ({Math.floor(selection.x/10)+1},{Math.floor(selection.y/10)+1})→({Math.floor((selection.x+selection.width)/10)},{Math.floor((selection.y+selection.height)/10)}) · {(selection.width * selection.height).toLocaleString("tr-TR")} ₺
+            {selection.width}×{selection.height} · {(selection.width * selection.height).toLocaleString("tr-TR")} ₺
           </div>
+
           {/* Köşe tutucuları */}
           {[
             { top: -3, left: -3 }, { top: -3, right: -3 },
             { bottom: -3, left: -3 }, { bottom: -3, right: -3 },
           ].map((pos, i) => (
-            <div
-              key={i}
-              className="absolute w-2 h-2 bg-yellow-400 rounded-sm"
-              style={pos}
-            />
+            <div key={i} className="absolute w-2 h-2 bg-yellow-400 rounded-sm pointer-events-none" style={pos} />
           ))}
+
+          {/* Yukarı */}
+          <button
+            className={btnClass}
+            style={{ width: 28, height: 28, top: -36, left: "50%", transform: "translateX(-50%)", fontSize: 14 }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); moveSelection(0, -BLOCK); }}
+          >▲</button>
+
+          {/* Aşağı */}
+          <button
+            className={btnClass}
+            style={{ width: 28, height: 28, bottom: -36, left: "50%", transform: "translateX(-50%)", fontSize: 14 }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); moveSelection(0, BLOCK); }}
+          >▼</button>
+
+          {/* Sol */}
+          <button
+            className={btnClass}
+            style={{ width: 28, height: 28, top: "50%", left: -36, transform: "translateY(-50%)", fontSize: 14 }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); moveSelection(-BLOCK, 0); }}
+          >◀</button>
+
+          {/* Sağ */}
+          <button
+            className={btnClass}
+            style={{ width: 28, height: 28, top: "50%", right: -36, transform: "translateY(-50%)", fontSize: 14 }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); moveSelection(BLOCK, 0); }}
+          >▶</button>
         </div>
       )}
     </div>

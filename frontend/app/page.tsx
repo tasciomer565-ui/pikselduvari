@@ -922,7 +922,7 @@ export default function Home() {
             <div className="text-xs text-gray-500 hidden sm:block">
               {hoveredRegion
                 ? <span className="text-indigo-400 font-medium">📍 {hoveredRegion}</span>
-                : <span>Zoom: <kbd className="bg-gray-700 px-1 rounded">scroll</kbd> · Seçim: <kbd className="bg-gray-700 px-1 rounded">sürükle</kbd></span>
+                : <span>Zoom: <kbd className="bg-gray-700 px-1 rounded">scroll</kbd> · Tıkla: <kbd className="bg-gray-700 px-1 rounded">alan seç</kbd> · Sürükle: <kbd className="bg-gray-700 px-1 rounded">kaydır</kbd></span>
               }
             </div>
           </div>
@@ -1013,7 +1013,7 @@ export default function Home() {
                 maxScale={15}
                 initialScale={0.5}
                 centerOnInit
-                panning={{ disabled: false, activationKeys: ["Control"] }}
+                panning={{ disabled: false }}
                 wheel={{ step: 0.012 }}
                 onTransform={(ref) => {
                   const { positionX, positionY, scale } = ref.state;
@@ -1078,7 +1078,7 @@ export default function Home() {
             )}
 
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm text-gray-400 text-xs px-4 py-2 rounded-full border border-gray-700 pointer-events-none">
-              Scroll → zoom · Sol sürükle → alan seç · Ctrl + sürükle → haritayı kaydır
+              Scroll / ± → zoom · Sürükle → haritayı kaydır · Tıkla → alan seç · Ok tuşları → seçimi taşı
             </div>
           </div>
 
