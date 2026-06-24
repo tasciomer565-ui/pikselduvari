@@ -1180,7 +1180,6 @@ export default function Home() {
             <MobileSelectionSheet selection={selection} onClose={() => setSelection(null)} onPreset={handlePreset} />
           )}
         </div>
-        <WhatsAppWidget />
       </div>
     );
   }
