@@ -758,6 +758,7 @@ export default function Home() {
 
   const [viewport, setViewport] = useState({ x: 0, y: 0, w: 1000, h: 1000 });
   const [zoomScale, setZoomScale] = useState(0.5);
+  const [transformState, setTransformState] = useState({ x: 0, y: 0, scale: 0.5 });
 
   useEffect(() => {
     fetch("/api/pixels")
@@ -1014,7 +1015,7 @@ export default function Home() {
                 initialScale={0.5}
                 centerOnInit
                 panning={{ disabled: false }}
-                wheel={{ step: 0.012 }}
+                wheel={{ step: 0.08 }}
                 onTransform={(ref) => {
                   const { positionX, positionY, scale } = ref.state;
                   const containerW = window.innerWidth;
@@ -1026,6 +1027,7 @@ export default function Home() {
                     h: containerH / scale,
                   });
                   setZoomScale(scale);
+                  setTransformState({ x: positionX, y: positionY, scale });
                 }}
               >
                 {({ zoomIn, zoomOut, resetTransform, setTransform }) => {
@@ -1066,6 +1068,33 @@ export default function Home() {
                 }}
               </TransformWrapper>
             )}
+
+            {/* Seçim yön ok butonları — TransformComponent dışında, ekran koordinatıyla */}
+            {!loading && selection && (() => {
+              const { x: tx, y: ty, scale } = transformState;
+              const sx = selection.x * scale + tx;
+              const sy = selection.y * scale + ty;
+              const sw = selection.width * scale;
+              const sh = selection.height * scale;
+              const cx = sx + sw / 2;
+              const cy = sy + sh / 2;
+              const B = 32;
+              const G = 6;
+              const btnCls = "absolute flex items-center justify-center bg-gray-900/95 border border-yellow-400/70 text-yellow-300 font-bold rounded-lg shadow-xl hover:bg-yellow-500 hover:text-black hover:border-yellow-500 transition text-sm select-none";
+              const move = (dx: number, dy: number) => setSelection(prev => prev ? {
+                ...prev,
+                x: Math.max(0, Math.min(1000 - prev.width, prev.x + dx)),
+                y: Math.max(0, Math.min(1000 - prev.height, prev.y + dy)),
+              } : prev);
+              return (
+                <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 25 }}>
+                  <button className={btnCls} style={{ width: B, height: B, left: cx - B/2, top: sy - B - G, pointerEvents: "auto" }} onClick={() => move(0, -10)}>▲</button>
+                  <button className={btnCls} style={{ width: B, height: B, left: cx - B/2, top: sy + sh + G, pointerEvents: "auto" }} onClick={() => move(0, 10)}>▼</button>
+                  <button className={btnCls} style={{ width: B, height: B, left: sx - B - G, top: cy - B/2, pointerEvents: "auto" }} onClick={() => move(-10, 0)}>◀</button>
+                  <button className={btnCls} style={{ width: B, height: B, left: sx + sw + G, top: cy - B/2, pointerEvents: "auto" }} onClick={() => move(10, 0)}>▶</button>
+                </div>
+              );
+            })()}
 
             {!loading && (
               <Minimap

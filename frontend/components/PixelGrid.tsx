@@ -90,15 +90,6 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
     }
   };
 
-  // Move selection with arrow buttons
-  const moveSelection = (dx: number, dy: number) => {
-    if (!selection) return;
-    const nx = Math.max(0, Math.min(GRID_SIZE - selection.width, selection.x + dx));
-    const ny = Math.max(0, Math.min(GRID_SIZE - selection.height, selection.y + dy));
-    onSelect({ ...selection, x: nx, y: ny });
-  };
-
-  const btnClass = "absolute flex items-center justify-center bg-gray-900/90 border border-gray-600 text-white font-bold rounded-lg shadow-lg hover:bg-indigo-600 hover:border-indigo-500 transition select-none";
 
   return (
     <div
@@ -315,7 +306,7 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
       {/* 6. Seçim + yön okları */}
       {selection && (
         <div
-          className="absolute"
+          className="absolute pointer-events-none"
           style={{
             left: selection.x, top: selection.y,
             width: selection.width, height: selection.height,
@@ -323,13 +314,9 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
             background: "rgba(250,204,21,0.18)",
             zIndex: 15,
           }}
-          onMouseDown={(e) => e.stopPropagation()}
-          onMouseUp={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
         >
           {/* Etiket */}
           <div
-            className="pointer-events-none"
             style={{
               position: "absolute",
               top: selection.y > 25 ? -24 : 4,
@@ -352,40 +339,8 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
             { top: -3, left: -3 }, { top: -3, right: -3 },
             { bottom: -3, left: -3 }, { bottom: -3, right: -3 },
           ].map((pos, i) => (
-            <div key={i} className="absolute w-2 h-2 bg-yellow-400 rounded-sm pointer-events-none" style={pos} />
+            <div key={i} className="absolute w-2 h-2 bg-yellow-400 rounded-sm" style={pos} />
           ))}
-
-          {/* Yukarı */}
-          <button
-            className={btnClass}
-            style={{ width: 28, height: 28, top: -36, left: "50%", transform: "translateX(-50%)", fontSize: 14 }}
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => { e.stopPropagation(); moveSelection(0, -BLOCK); }}
-          >▲</button>
-
-          {/* Aşağı */}
-          <button
-            className={btnClass}
-            style={{ width: 28, height: 28, bottom: -36, left: "50%", transform: "translateX(-50%)", fontSize: 14 }}
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => { e.stopPropagation(); moveSelection(0, BLOCK); }}
-          >▼</button>
-
-          {/* Sol */}
-          <button
-            className={btnClass}
-            style={{ width: 28, height: 28, top: "50%", left: -36, transform: "translateY(-50%)", fontSize: 14 }}
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => { e.stopPropagation(); moveSelection(-BLOCK, 0); }}
-          >◀</button>
-
-          {/* Sağ */}
-          <button
-            className={btnClass}
-            style={{ width: 28, height: 28, top: "50%", right: -36, transform: "translateY(-50%)", fontSize: 14 }}
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => { e.stopPropagation(); moveSelection(BLOCK, 0); }}
-          >▶</button>
         </div>
       )}
     </div>
