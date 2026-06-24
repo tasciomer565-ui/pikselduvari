@@ -1016,6 +1016,7 @@ export default function Home() {
                 centerOnInit
                 panning={{ disabled: false }}
                 wheel={{ disabled: true }}
+                doubleClick={{ disabled: true }}
                 onTransform={(ref) => {
                   const { positionX, positionY, scale } = ref.state;
                   const containerW = window.innerWidth;
@@ -1080,6 +1081,15 @@ export default function Home() {
               const cy = sy + sh / 2;
               const BLOCK = 10, MAX = 1000;
 
+              // Ok tuşları seçimi TAŞIR (her basış 10px)
+              const move = (dx: number, dy: number) => setSelection(prev => {
+                if (!prev) return prev;
+                return {
+                  ...prev,
+                  x: Math.max(0, Math.min(MAX - prev.width, prev.x + dx)),
+                  y: Math.max(0, Math.min(MAX - prev.height, prev.y + dy)),
+                };
+              });
               const expand = (side: "up"|"down"|"left"|"right") => setSelection(prev => {
                 if (!prev) return prev;
                 switch(side) {
@@ -1120,12 +1130,12 @@ export default function Home() {
                     {/* Satır 1: boş | ↑ | boş */}
                     <div className="flex gap-[6px] justify-center mb-[6px]">
                       <div style={{ width: BTN }} />
-                      <button style={{ width: BTN, height: BTN }} className={arrowBtn} onClick={() => expand("up")}>↑</button>
+                      <button style={{ width: BTN, height: BTN }} className={arrowBtn} onClick={() => move(0, -BLOCK)}>↑</button>
                       <div style={{ width: BTN }} />
                     </div>
                     {/* Satır 2: ← | bilgi | → */}
                     <div className="flex gap-[6px] items-center justify-center mb-[6px]">
-                      <button style={{ width: BTN, height: INFO_H }} className={arrowBtn} onClick={() => expand("left")}>←</button>
+                      <button style={{ width: BTN, height: INFO_H }} className={arrowBtn} onClick={() => move(-BLOCK, 0)}>←</button>
                       <div style={{ width: INFO_W, height: INFO_H }} className="bg-white border-2 border-gray-200 rounded-xl flex flex-col items-center justify-center shadow">
                         <div className="text-gray-800 font-bold text-sm">{selection.width}×{selection.height}px</div>
                         <div className="text-green-600 font-bold text-sm">{price} ₺</div>
@@ -1134,12 +1144,12 @@ export default function Home() {
                           <button className="text-gray-500 hover:text-gray-800 font-bold text-base w-6 h-6 rounded border border-gray-300 flex items-center justify-center" onClick={() => expand("right")}>+</button>
                         </div>
                       </div>
-                      <button style={{ width: BTN, height: INFO_H }} className={arrowBtn} onClick={() => expand("right")}>→</button>
+                      <button style={{ width: BTN, height: INFO_H }} className={arrowBtn} onClick={() => move(BLOCK, 0)}>→</button>
                     </div>
                     {/* Satır 3: boş | ↓ | boş */}
                     <div className="flex gap-[6px] justify-center mb-[6px]">
                       <div style={{ width: BTN }} />
-                      <button style={{ width: BTN, height: BTN }} className={arrowBtn} onClick={() => expand("down")}>↓</button>
+                      <button style={{ width: BTN, height: BTN }} className={arrowBtn} onClick={() => move(0, BLOCK)}>↓</button>
                       <div style={{ width: BTN }} />
                     </div>
                     {/* Satır 4: ✗ | ↩ | DEVAM */}

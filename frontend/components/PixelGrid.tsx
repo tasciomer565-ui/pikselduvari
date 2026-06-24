@@ -303,7 +303,7 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
         />
       )}
 
-      {/* 6. Seçim + yön okları */}
+      {/* 6. Seçim — sadece border */}
       {selection && (
         <div
           className="absolute pointer-events-none"
@@ -311,37 +311,10 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
             left: selection.x, top: selection.y,
             width: selection.width, height: selection.height,
             border: "2.5px solid #facc15",
-            background: "rgba(250,204,21,0.18)",
+            background: "rgba(250,204,21,0.15)",
             zIndex: 15,
           }}
-        >
-          {/* Etiket */}
-          <div
-            style={{
-              position: "absolute",
-              top: selection.y > 25 ? -24 : 4,
-              left: 0,
-              background: "#facc15",
-              color: "#000",
-              fontSize: 11,
-              fontWeight: 700,
-              padding: "2px 6px",
-              borderRadius: 4,
-              whiteSpace: "nowrap",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.5)",
-            }}
-          >
-            {selection.width}×{selection.height} · {(selection.width * selection.height).toLocaleString("tr-TR")} ₺
-          </div>
-
-          {/* Köşe tutucuları */}
-          {[
-            { top: -3, left: -3 }, { top: -3, right: -3 },
-            { bottom: -3, left: -3 }, { bottom: -3, right: -3 },
-          ].map((pos, i) => (
-            <div key={i} className="absolute w-2 h-2 bg-yellow-400 rounded-sm" style={pos} />
-          ))}
-        </div>
+        />
       )}
     </div>
   );
