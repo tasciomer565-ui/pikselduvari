@@ -923,7 +923,7 @@ export default function Home() {
             <div className="text-xs text-gray-500 hidden sm:block">
               {hoveredRegion
                 ? <span className="text-indigo-400 font-medium">📍 {hoveredRegion}</span>
-                : <span>Zoom: <kbd className="bg-gray-700 px-1 rounded">scroll</kbd> · Tıkla: <kbd className="bg-gray-700 px-1 rounded">alan seç</kbd> · Sürükle: <kbd className="bg-gray-700 px-1 rounded">kaydır</kbd></span>
+                : <span>Zoom: <kbd className="bg-gray-700 px-1 rounded">±</kbd> · Tıkla: <kbd className="bg-gray-700 px-1 rounded">alan seç</kbd> · Sürükle: <kbd className="bg-gray-700 px-1 rounded">kaydır</kbd></span>
               }
             </div>
           </div>
@@ -1012,7 +1012,7 @@ export default function Home() {
                 ref={transformRef}
                 minScale={0.08}
                 maxScale={15}
-                initialScale={0.5}
+                initialScale={typeof window !== "undefined" ? Math.min((window.innerWidth - 32) / 1000, (window.innerHeight - 160) / 1000, 0.95) : 0.5}
                 centerOnInit
                 panning={{ disabled: false }}
                 wheel={{ disabled: true }}
@@ -1167,7 +1167,7 @@ export default function Home() {
             )}
 
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm text-gray-400 text-xs px-4 py-2 rounded-full border border-gray-700 pointer-events-none">
-              Scroll / ± → zoom · Sürükle → haritayı kaydır · Tıkla → alan seç · Ok tuşları → seçimi taşı
+              ± butonları → zoom · Sürükle → haritayı kaydır · Tıkla → alan seç · Ok tuşları → alanı genişlet
             </div>
           </div>
 
