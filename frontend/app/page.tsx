@@ -1069,7 +1069,7 @@ export default function Home() {
               </TransformWrapper>
             )}
 
-            {/* Seçim yön ok butonları — TransformComponent dışında, ekran koordinatıyla */}
+            {/* Seçim paneli — TransformComponent dışında, referans site gibi */}
             {!loading && selection && (() => {
               const { x: tx, y: ty, scale } = transformState;
               const sx = selection.x * scale + tx;
@@ -1078,51 +1078,78 @@ export default function Home() {
               const sh = selection.height * scale;
               const cx = sx + sw / 2;
               const cy = sy + sh / 2;
-              const B = 32;
-              const G = 6;
-              const btnCls = "absolute flex items-center justify-center bg-gray-900/95 border border-yellow-400/70 text-yellow-300 font-bold rounded-lg shadow-xl hover:bg-yellow-500 hover:text-black hover:border-yellow-500 transition text-sm select-none";
-              // Ok tuşları seçimi o yönde 10px GENİŞLETİR
+              const BLOCK = 10, MAX = 1000;
+
               const expand = (side: "up"|"down"|"left"|"right") => setSelection(prev => {
                 if (!prev) return prev;
-                const BLOCK = 10, MAX = 1000;
                 switch(side) {
                   case "up":    return prev.y >= BLOCK ? { ...prev, y: prev.y - BLOCK, height: Math.min(prev.height + BLOCK, MAX) } : prev;
                   case "down":  return prev.y + prev.height + BLOCK <= MAX ? { ...prev, height: prev.height + BLOCK } : prev;
                   case "left":  return prev.x >= BLOCK ? { ...prev, x: prev.x - BLOCK, width: Math.min(prev.width + BLOCK, MAX) } : prev;
                   case "right": return prev.x + prev.width + BLOCK <= MAX ? { ...prev, width: prev.width + BLOCK } : prev;
-                  default: return prev;
                 }
               });
-              const shrink = (side: "up"|"down"|"left"|"right") => setSelection(prev => {
+              const shrink = (axis: "w"|"h") => setSelection(prev => {
                 if (!prev) return prev;
-                const BLOCK = 10;
-                switch(side) {
-                  case "up":    return prev.height > BLOCK ? { ...prev, height: prev.height - BLOCK } : prev;
-                  case "down":  return prev.height > BLOCK ? { ...prev, y: prev.y + BLOCK, height: prev.height - BLOCK } : prev;
-                  case "left":  return prev.width > BLOCK ? { ...prev, width: prev.width - BLOCK } : prev;
-                  case "right": return prev.width > BLOCK ? { ...prev, x: prev.x + BLOCK, width: prev.width - BLOCK } : prev;
-                  default: return prev;
-                }
+                if (axis === "w") return prev.width > BLOCK ? { ...prev, width: prev.width - BLOCK } : prev;
+                return prev.height > BLOCK ? { ...prev, height: prev.height - BLOCK } : prev;
               });
-              const infoW = 110;
+
+              // Panel boyutları
+              const BTN = 40; // ok butonu boyutu
+              const INFO_W = 120;
+              const INFO_H = 52;
+              const GAP = 6;
+              const panelW = BTN + GAP + INFO_W + GAP + BTN; // 212
+              const panelH = BTN + GAP + INFO_H + GAP + BTN; // 144
+              const ACT_H = 44;
+
+              // Paneli seçimin ortasına hizala, ekran dışına taşmasın
+              const containerW = typeof window !== "undefined" ? window.innerWidth : 800;
+              const containerH = typeof window !== "undefined" ? window.innerHeight - 120 : 600;
+              const panelLeft = Math.max(8, Math.min(containerW - panelW - 8, cx - panelW / 2));
+              const panelTop  = Math.max(8, Math.min(containerH - panelH - ACT_H - 16, cy - panelH / 2));
+
+              const arrowBtn = "flex items-center justify-center bg-white border-2 border-gray-300 text-gray-700 font-bold rounded-xl shadow hover:bg-gray-100 active:scale-95 transition text-lg select-none cursor-pointer";
+              const price = (selection.width * selection.height).toLocaleString("tr-TR");
+              const params = new URLSearchParams({ x: String(selection.x), y: String(selection.y), w: String(selection.width), h: String(selection.height) });
+
               return (
                 <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 25 }}>
-                  {/* Yukarı genişlet */}
-                  <button className={btnCls} style={{ width: B, height: B, left: cx - B/2, top: sy - B - G, pointerEvents: "auto" }} onClick={() => expand("up")}>▲</button>
-                  {/* Aşağı genişlet */}
-                  <button className={btnCls} style={{ width: B, height: B, left: cx - B/2, top: sy + sh + G, pointerEvents: "auto" }} onClick={() => expand("down")}>▼</button>
-                  {/* Sol genişlet */}
-                  <button className={btnCls} style={{ width: B, height: B, left: sx - B - G, top: cy - B/2, pointerEvents: "auto" }} onClick={() => expand("left")}>◀</button>
-                  {/* Sağ genişlet */}
-                  <button className={btnCls} style={{ width: B, height: B, left: sx + sw + G, top: cy - B/2, pointerEvents: "auto" }} onClick={() => expand("right")}>▶</button>
-                  {/* Merkez bilgi kutusu */}
-                  <div style={{ position: "absolute", left: cx - infoW/2, top: cy - 28, width: infoW, pointerEvents: "auto" }}
-                    className="bg-gray-900/95 border border-yellow-400/60 rounded-xl text-center shadow-xl px-2 py-1.5">
-                    <div className="text-white font-bold text-xs">{selection.width}×{selection.height}px</div>
-                    <div className="text-yellow-400 font-bold text-xs">{(selection.width * selection.height).toLocaleString("tr-TR")} ₺</div>
-                    <div className="flex gap-1 mt-1 justify-center">
-                      <button className="text-gray-400 hover:text-white text-xs bg-gray-800 rounded px-1.5 py-0.5" onClick={() => shrink("right")}>−</button>
-                      <button className="text-gray-400 hover:text-white text-xs bg-gray-800 rounded px-1.5 py-0.5" onClick={() => expand("right")}>+</button>
+                  <div style={{ position: "absolute", left: panelLeft, top: panelTop, width: panelW, pointerEvents: "auto" }}>
+                    {/* Satır 1: boş | ↑ | boş */}
+                    <div className="flex gap-[6px] justify-center mb-[6px]">
+                      <div style={{ width: BTN }} />
+                      <button style={{ width: BTN, height: BTN }} className={arrowBtn} onClick={() => expand("up")}>↑</button>
+                      <div style={{ width: BTN }} />
+                    </div>
+                    {/* Satır 2: ← | bilgi | → */}
+                    <div className="flex gap-[6px] items-center justify-center mb-[6px]">
+                      <button style={{ width: BTN, height: INFO_H }} className={arrowBtn} onClick={() => expand("left")}>←</button>
+                      <div style={{ width: INFO_W, height: INFO_H }} className="bg-white border-2 border-gray-200 rounded-xl flex flex-col items-center justify-center shadow">
+                        <div className="text-gray-800 font-bold text-sm">{selection.width}×{selection.height}px</div>
+                        <div className="text-green-600 font-bold text-sm">{price} ₺</div>
+                        <div className="flex gap-2 mt-1">
+                          <button className="text-gray-500 hover:text-gray-800 font-bold text-base w-6 h-6 rounded border border-gray-300 flex items-center justify-center" onClick={() => shrink("w")}>−</button>
+                          <button className="text-gray-500 hover:text-gray-800 font-bold text-base w-6 h-6 rounded border border-gray-300 flex items-center justify-center" onClick={() => expand("right")}>+</button>
+                        </div>
+                      </div>
+                      <button style={{ width: BTN, height: INFO_H }} className={arrowBtn} onClick={() => expand("right")}>→</button>
+                    </div>
+                    {/* Satır 3: boş | ↓ | boş */}
+                    <div className="flex gap-[6px] justify-center mb-[6px]">
+                      <div style={{ width: BTN }} />
+                      <button style={{ width: BTN, height: BTN }} className={arrowBtn} onClick={() => expand("down")}>↓</button>
+                      <div style={{ width: BTN }} />
+                    </div>
+                    {/* Satır 4: ✗ | ↩ | DEVAM */}
+                    <div className="flex gap-[6px]">
+                      <button style={{ width: BTN, height: 40 }} className="flex items-center justify-center bg-white border-2 border-gray-300 text-gray-500 font-bold rounded-xl shadow hover:bg-red-50 hover:border-red-300 hover:text-red-500 active:scale-95 transition text-lg select-none" onClick={() => setSelection(null)}>✕</button>
+                      <button style={{ width: BTN, height: 40 }} className="flex items-center justify-center bg-white border-2 border-gray-300 text-gray-500 font-bold rounded-xl shadow hover:bg-gray-100 active:scale-95 transition text-base select-none" onClick={() => setSelection({ x: 0, y: 0, width: BLOCK, height: BLOCK })}>↩</button>
+                      <button style={{ flex: 1, height: 40 }} className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-400 active:scale-95 transition text-white font-bold rounded-xl shadow text-sm select-none"
+                        onClick={() => window.location.href = `/satin-al?${params}`}>
+                        ✓ DEVAM
+                      </button>
                     </div>
                   </div>
                 </div>
