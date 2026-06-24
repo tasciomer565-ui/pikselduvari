@@ -72,6 +72,42 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
   const handleMouseUp = () => setDragging(false);
   const handleMouseLeave = () => { setDragging(false); setHovered(null); onRegion?.(null); };
 
+  const getCellFromTouch = useCallback((touch: React.Touch) => {
+    if (!divRef.current) return null;
+    const rect = divRef.current.getBoundingClientRect();
+    const scaleX = GRID_SIZE / rect.width;
+    const scaleY = GRID_SIZE / rect.height;
+    const rawX = (touch.clientX - rect.left) * scaleX;
+    const rawY = (touch.clientY - rect.top) * scaleY;
+    const cellX = Math.max(0, Math.min(GRID_SIZE - BLOCK, Math.floor(rawX / BLOCK) * BLOCK));
+    const cellY = Math.max(0, Math.min(GRID_SIZE - BLOCK, Math.floor(rawY / BLOCK) * BLOCK));
+    return { x: cellX, y: cellY };
+  }, []);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!selectable || e.touches.length !== 1) return;
+    e.preventDefault();
+    const cell = getCellFromTouch(e.touches[0]);
+    if (!cell) return;
+    setDragging(true);
+    setStartCell(cell);
+    onSelect({ x: cell.x, y: cell.y, width: BLOCK, height: BLOCK });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!dragging || !startCell || e.touches.length !== 1) return;
+    e.preventDefault();
+    const cell = getCellFromTouch(e.touches[0]);
+    if (!cell) return;
+    const x = Math.min(startCell.x, cell.x);
+    const y = Math.min(startCell.y, cell.y);
+    const w = Math.max(startCell.x, cell.x) - x + BLOCK;
+    const h = Math.max(startCell.y, cell.y) - y + BLOCK;
+    onSelect({ x, y, width: w, height: h });
+  };
+
+  const handleTouchEnd = () => setDragging(false);
+
   return (
     <div
       ref={divRef}
@@ -82,6 +118,9 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
       onContextMenu={handleContextMenu}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       {/* 1. Bölge renk katmanı (alt) */}
       {REGIONS.map((r) => (
