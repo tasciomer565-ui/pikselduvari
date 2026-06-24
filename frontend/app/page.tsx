@@ -1015,7 +1015,7 @@ export default function Home() {
                 initialScale={0.5}
                 centerOnInit
                 panning={{ disabled: false }}
-                wheel={{ step: 0.03 }}
+                wheel={{ disabled: true }}
                 onTransform={(ref) => {
                   const { positionX, positionY, scale } = ref.state;
                   const containerW = window.innerWidth;
@@ -1081,17 +1081,50 @@ export default function Home() {
               const B = 32;
               const G = 6;
               const btnCls = "absolute flex items-center justify-center bg-gray-900/95 border border-yellow-400/70 text-yellow-300 font-bold rounded-lg shadow-xl hover:bg-yellow-500 hover:text-black hover:border-yellow-500 transition text-sm select-none";
-              const move = (dx: number, dy: number) => setSelection(prev => prev ? {
-                ...prev,
-                x: Math.max(0, Math.min(1000 - prev.width, prev.x + dx)),
-                y: Math.max(0, Math.min(1000 - prev.height, prev.y + dy)),
-              } : prev);
+              // Ok tuşları seçimi o yönde 10px GENİŞLETİR
+              const expand = (side: "up"|"down"|"left"|"right") => setSelection(prev => {
+                if (!prev) return prev;
+                const BLOCK = 10, MAX = 1000;
+                switch(side) {
+                  case "up":    return prev.y >= BLOCK ? { ...prev, y: prev.y - BLOCK, height: Math.min(prev.height + BLOCK, MAX) } : prev;
+                  case "down":  return prev.y + prev.height + BLOCK <= MAX ? { ...prev, height: prev.height + BLOCK } : prev;
+                  case "left":  return prev.x >= BLOCK ? { ...prev, x: prev.x - BLOCK, width: Math.min(prev.width + BLOCK, MAX) } : prev;
+                  case "right": return prev.x + prev.width + BLOCK <= MAX ? { ...prev, width: prev.width + BLOCK } : prev;
+                  default: return prev;
+                }
+              });
+              const shrink = (side: "up"|"down"|"left"|"right") => setSelection(prev => {
+                if (!prev) return prev;
+                const BLOCK = 10;
+                switch(side) {
+                  case "up":    return prev.height > BLOCK ? { ...prev, height: prev.height - BLOCK } : prev;
+                  case "down":  return prev.height > BLOCK ? { ...prev, y: prev.y + BLOCK, height: prev.height - BLOCK } : prev;
+                  case "left":  return prev.width > BLOCK ? { ...prev, width: prev.width - BLOCK } : prev;
+                  case "right": return prev.width > BLOCK ? { ...prev, x: prev.x + BLOCK, width: prev.width - BLOCK } : prev;
+                  default: return prev;
+                }
+              });
+              const infoW = 110;
               return (
                 <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 25 }}>
-                  <button className={btnCls} style={{ width: B, height: B, left: cx - B/2, top: sy - B - G, pointerEvents: "auto" }} onClick={() => move(0, -10)}>▲</button>
-                  <button className={btnCls} style={{ width: B, height: B, left: cx - B/2, top: sy + sh + G, pointerEvents: "auto" }} onClick={() => move(0, 10)}>▼</button>
-                  <button className={btnCls} style={{ width: B, height: B, left: sx - B - G, top: cy - B/2, pointerEvents: "auto" }} onClick={() => move(-10, 0)}>◀</button>
-                  <button className={btnCls} style={{ width: B, height: B, left: sx + sw + G, top: cy - B/2, pointerEvents: "auto" }} onClick={() => move(10, 0)}>▶</button>
+                  {/* Yukarı genişlet */}
+                  <button className={btnCls} style={{ width: B, height: B, left: cx - B/2, top: sy - B - G, pointerEvents: "auto" }} onClick={() => expand("up")}>▲</button>
+                  {/* Aşağı genişlet */}
+                  <button className={btnCls} style={{ width: B, height: B, left: cx - B/2, top: sy + sh + G, pointerEvents: "auto" }} onClick={() => expand("down")}>▼</button>
+                  {/* Sol genişlet */}
+                  <button className={btnCls} style={{ width: B, height: B, left: sx - B - G, top: cy - B/2, pointerEvents: "auto" }} onClick={() => expand("left")}>◀</button>
+                  {/* Sağ genişlet */}
+                  <button className={btnCls} style={{ width: B, height: B, left: sx + sw + G, top: cy - B/2, pointerEvents: "auto" }} onClick={() => expand("right")}>▶</button>
+                  {/* Merkez bilgi kutusu */}
+                  <div style={{ position: "absolute", left: cx - infoW/2, top: cy - 28, width: infoW, pointerEvents: "auto" }}
+                    className="bg-gray-900/95 border border-yellow-400/60 rounded-xl text-center shadow-xl px-2 py-1.5">
+                    <div className="text-white font-bold text-xs">{selection.width}×{selection.height}px</div>
+                    <div className="text-yellow-400 font-bold text-xs">{(selection.width * selection.height).toLocaleString("tr-TR")} ₺</div>
+                    <div className="flex gap-1 mt-1 justify-center">
+                      <button className="text-gray-400 hover:text-white text-xs bg-gray-800 rounded px-1.5 py-0.5" onClick={() => shrink("right")}>−</button>
+                      <button className="text-gray-400 hover:text-white text-xs bg-gray-800 rounded px-1.5 py-0.5" onClick={() => expand("right")}>+</button>
+                    </div>
+                  </div>
                 </div>
               );
             })()}
