@@ -1112,11 +1112,13 @@ export default function Home() {
               const panelH = BTN + GAP + INFO_H + GAP + BTN; // 144
               const ACT_H = 44;
 
-              // Paneli seçimin ortasına hizala, ekran dışına taşmasın
+              // Paneli seçimin ALTINA koy, sığmazsa üstüne
               const containerW = typeof window !== "undefined" ? window.innerWidth : 800;
               const containerH = typeof window !== "undefined" ? window.innerHeight - 120 : 600;
               const panelLeft = Math.max(8, Math.min(containerW - panelW - 8, cx - panelW / 2));
-              const panelTop  = Math.max(8, Math.min(containerH - panelH - ACT_H - 16, cy - panelH / 2));
+              const belowY = sy + sh + 12;
+              const aboveY = sy - panelH - ACT_H - 12;
+              const panelTop = belowY + panelH + ACT_H < containerH ? belowY : Math.max(8, aboveY);
 
               const arrowBtn = "flex items-center justify-center bg-white border-2 border-gray-300 text-gray-700 font-bold rounded-xl shadow hover:bg-gray-100 active:scale-95 transition text-lg select-none cursor-pointer";
               const price = (selection.width * selection.height).toLocaleString("tr-TR");
