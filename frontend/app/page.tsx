@@ -1130,22 +1130,22 @@ export default function Home() {
                     {/* Satır 1: boş | ↑ | boş */}
                     <div className="flex gap-[6px] justify-center mb-[6px]">
                       <div style={{ width: BTN }} />
-                      <button style={{ width: BTN, height: BTN }} className={arrowBtn} onClick={() => move(0, -BLOCK)}>↑</button>
+                      <button style={{ width: BTN, height: BTN }} className={arrowBtn} onClick={() => expand("up")}>↑</button>
                       <div style={{ width: BTN }} />
                     </div>
                     {/* Satır 2: ← | bilgi | → */}
                     <div className="flex gap-[6px] items-center justify-center mb-[6px]">
-                      <button style={{ width: BTN, height: INFO_H }} className={arrowBtn} onClick={() => move(-BLOCK, 0)}>←</button>
+                      <button style={{ width: BTN, height: INFO_H }} className={arrowBtn} onClick={() => expand("left")}>←</button>
                       <div style={{ width: INFO_W, height: INFO_H }} className="bg-white border-2 border-yellow-400 rounded-xl flex flex-col items-center justify-center shadow">
                         <div className="text-gray-800 font-bold text-sm">{selection.width}×{selection.height}px</div>
                         <div className="text-green-600 font-bold text-lg">{price} ₺</div>
                       </div>
-                      <button style={{ width: BTN, height: INFO_H }} className={arrowBtn} onClick={() => move(BLOCK, 0)}>→</button>
+                      <button style={{ width: BTN, height: INFO_H }} className={arrowBtn} onClick={() => expand("right")}>→</button>
                     </div>
                     {/* Satır 3: boş | ↓ | boş */}
                     <div className="flex gap-[6px] justify-center mb-[6px]">
                       <div style={{ width: BTN }} />
-                      <button style={{ width: BTN, height: BTN }} className={arrowBtn} onClick={() => move(0, BLOCK)}>↓</button>
+                      <button style={{ width: BTN, height: BTN }} className={arrowBtn} onClick={() => expand("down")}>↓</button>
                       <div style={{ width: BTN }} />
                     </div>
                     {/* Satır 4: ✗ | ↩ | DEVAM */}
