@@ -1014,9 +1014,10 @@ export default function Home() {
                 maxScale={15}
                 initialScale={typeof window !== "undefined" ? Math.min((window.innerWidth - 32) / 1000, (window.innerHeight - 160) / 1000, 0.95) : 0.5}
                 centerOnInit
-                panning={{ disabled: false }}
+                panning={{ disabled: false, activationKeys: [] }}
                 wheel={{ disabled: true }}
                 doubleClick={{ disabled: true }}
+                limitToBounds={false}
                 onTransform={(ref) => {
                   const { positionX, positionY, scale } = ref.state;
                   const containerW = window.innerWidth;

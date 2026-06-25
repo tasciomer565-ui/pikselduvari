@@ -56,7 +56,7 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
     const dy = Math.abs(e.clientY - clickStartRef.current.y);
     const dt = Date.now() - clickStartRef.current.time;
     clickStartRef.current = null;
-    if (dx < 8 && dy < 8 && dt < 500) {
+    if (dx < 20 && dy < 20 && dt < 800) {
       const cell = getCellFromEvent(e);
       if (cell) onSelect({ x: cell.x, y: cell.y, width: BLOCK, height: BLOCK });
     }
@@ -84,7 +84,7 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
     const dy = Math.abs(touch.clientY - touchStartRef.current.y);
     const dt = Date.now() - touchStartRef.current.time;
     touchStartRef.current = null;
-    if (dx < 15 && dy < 15 && dt < 400) {
+    if (dx < 25 && dy < 25 && dt < 800) {
       const cell = getCellFromEvent({ clientX: touch.clientX, clientY: touch.clientY });
       if (cell) onSelect({ x: cell.x, y: cell.y, width: BLOCK, height: BLOCK });
     }
