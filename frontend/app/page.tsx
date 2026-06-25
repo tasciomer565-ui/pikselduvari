@@ -770,10 +770,7 @@ export default function Home() {
       })
       .catch(() => setLoading(false));
 
-    if (!localStorage.getItem("pd_visited")) {
-      setShowOnboarding(true);
-      localStorage.setItem("pd_visited", "1");
-    }
+    localStorage.setItem("pd_visited", "1");
 
     const channel = supabasePublic
       .channel("pixels-live")
@@ -1200,7 +1197,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      {showOnboarding && <OnboardingModal onClose={() => setShowOnboarding(false)} />}
       <EasterEggConfetti active={easterEgg} onDone={() => setEasterEgg(false)} />
 
       {/* Navbar */}
@@ -1288,24 +1284,18 @@ export default function Home() {
             Türkiye genelinde şehrinizi temsil eden alanda yerinizi alın.
           </p>
 
-          {/* Kampanya banner */}
-          <CampaignBanner />
-
           {/* CTAs */}
           <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
             <button
               onClick={goToGrid}
-              className="bg-indigo-600 hover:bg-indigo-500 transition px-8 py-4 rounded-xl font-bold text-lg flex items-center gap-2 hover:scale-105 active:scale-95 shadow-lg shadow-indigo-900/40"
+              className="relative bg-indigo-600 hover:bg-indigo-500 transition px-10 py-5 rounded-xl font-bold text-xl flex items-center gap-3 hover:scale-105 active:scale-95 shadow-lg shadow-indigo-900/40"
+              style={{ boxShadow: "0 0 40px rgba(99,102,241,0.4)" }}
             >
-              🗺️ Alanını Seç
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-ping" />
+              🗺️ Piksel Alanı Seç
             </button>
-            <a
-              href="/nasil-calisir"
-              className="border border-gray-700 hover:border-gray-500 text-gray-300 hover:text-white transition px-8 py-4 rounded-xl font-semibold text-lg flex items-center gap-2"
-            >
-              ▶ Nasıl Çalışır?
-            </a>
           </div>
+          <p className="text-gray-500 text-sm mb-6">100₺&apos;den başlayan fiyatlarla · Sonsuza kadar</p>
 
           <div className="text-gray-500 text-sm mb-4">
             En küçük alan: <span className="text-white font-semibold">10×10 = 100₺</span>
