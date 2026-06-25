@@ -286,7 +286,7 @@ export default function SelectionPanel({ selection, onClose, onPreset }: Props) 
       </button>
 
       <div className="space-y-1">
-        <p className="text-xs text-center text-gray-600">🔒 Güvenli ödeme · 30 gün iade garantisi</p>
+        <p className="text-xs text-center text-gray-600">🔒 Güvenli ödeme · SSL şifreli</p>
         <p className="text-[10px] text-center text-gray-700">
           ESC: Seçimi temizle · Enter: Satın al
         </p>

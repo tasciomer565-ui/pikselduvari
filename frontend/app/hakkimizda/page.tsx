@@ -103,7 +103,7 @@ export default function HakkimizdaPage() {
               { icon: "🔒", title: "Şeffaflık", desc: "Gizli ücret yok. 1 piksel = 1₺. Fiyatlarımız her zaman açık ve net." },
               { icon: "♾️", title: "Kalıcılık", desc: "Bir kez öde, sonsuza kadar kal. Abonelik yok, yenileme yok." },
               { icon: "🇹🇷", title: "Türk Girişimi", desc: "Yerli sermaye, yerli ekip. Türk işletmelerinin başarısı için çalışıyoruz." },
-              { icon: "🤝", title: "Güven", desc: "PayTR 3D Secure, SSL ve KVKK uyumluluğuyla güvenli alışveriş." },
+              { icon: "🤝", title: "Güven", desc: "SSL şifreleme ve KVKK uyumluluğuyla güvenli alışveriş." },
               { icon: "⚡", title: "Hız", desc: "Ödeme ve görsel yüklemesinin ardından 24 saat içinde yayına girin." },
               { icon: "🌱", title: "Büyüme", desc: "Platform büyüdükçe sizin pikselinizin değeri de artar. Birlikte büyüyoruz." },
             ].map((v) => (

@@ -206,7 +206,7 @@ function EmailCapture() {
         <div className="text-4xl mb-3">🎁</div>
         <h3 className="text-2xl font-bold mb-2">Ücretsiz 10×10 Alan Kazan</h3>
         <p className="text-gray-400 text-sm mb-6">
-          E-posta listemize katıl, PayTR entegrasyonu aktif olduğunda <strong className="text-white">100₺ değerinde ücretsiz alan</strong> sana özel gönderilsin.
+          E-posta listemize katıl, yeni gelişmeler ve özel fırsatlardan ilk sen haberdar ol.
         </p>
         {sent ? (
           <div className="bg-green-900/30 border border-green-700/40 rounded-xl px-6 py-4">
@@ -619,9 +619,9 @@ function TrustBadges() {
   const badges = [
     { icon: "🔒", label: "SSL/TLS Güvenli" },
     { icon: "🛡️", label: "KVKK Uyumlu" },
-    { icon: "✅", label: "PayTR Güvenli Ödeme" },
-    { icon: "💯", label: "30 Gün İade Garantisi" },
+    { icon: "💳", label: "Güvenli Ödeme" },
     { icon: "🇹🇷", label: "Türk Girişimi" },
+    { icon: "♾️", label: "Kalıcı Alan" },
   ];
   return (
     <div className="flex flex-wrap items-center justify-center gap-4 py-8 px-6 border-y border-gray-800/50">
@@ -1215,8 +1215,8 @@ export default function Home() {
       </nav>
 
       {/* Social proof bar */}
-      <div className="bg-indigo-950/40 border-b border-indigo-900/30 px-6 py-2 flex items-center justify-center gap-4 flex-wrap">
-        <LiveVisitorCounter />
+      <div className="bg-indigo-950/40 border-b border-indigo-900/30 px-6 py-2 flex items-center justify-center">
+        <span className="text-indigo-400 text-xs">🇹🇷 Türkiye&apos;nin dijital piksel reklam platformu</span>
       </div>
 
       {/* Hero section */}
@@ -1227,12 +1227,6 @@ export default function Home() {
         />
 
         <div className="relative z-10">
-          {/* Live badge */}
-          <div className="inline-flex items-center gap-2 bg-red-950/50 border border-red-800/50 rounded-full px-4 py-1.5 text-red-300 text-xs mb-6">
-            <span className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
-            🔴 CANLI: <strong className="ml-1">{liveMonthCount} piksel alanı</strong> bu ay satıldı
-          </div>
-
           <h1 className="text-5xl sm:text-6xl font-extrabold mb-6 leading-tight">
             Reklamın{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
@@ -1264,15 +1258,15 @@ export default function Home() {
             <span className="line-through text-gray-700">Billboard: 50.000₺/ay</span>
           </div>
 
-          {/* Animated stats */}
+          {/* Gerçek stats */}
           <div className="mt-8 grid grid-cols-3 gap-6 max-w-lg mx-auto">
             <div className="bg-gray-900 rounded-2xl p-4 border border-gray-800">
-              <AnimatedCounter target={Math.max(totalSold, 250000)} className="text-2xl font-bold text-white" />
-              <div className="text-xs text-gray-500 mt-1">Piksel satıldı</div>
+              <div className="text-2xl font-bold text-white">1.000.000</div>
+              <div className="text-xs text-gray-500 mt-1">Toplam piksel</div>
             </div>
             <div className="bg-gray-900 rounded-2xl p-4 border border-gray-800">
-              <AnimatedCounter target={Math.min(totalPixels - totalSold, 750000)} className="text-2xl font-bold text-green-400" />
-              <div className="text-xs text-gray-500 mt-1">Piksel mevcut</div>
+              <div className="text-2xl font-bold text-green-400">1 ₺</div>
+              <div className="text-xs text-gray-500 mt-1">Piksel başına</div>
             </div>
             <div className="bg-gray-900 rounded-2xl p-4 border border-gray-800">
               <div className="text-2xl font-bold text-indigo-400">16</div>
@@ -1476,7 +1470,7 @@ export default function Home() {
           >
             🗺️ Haritayı Aç &amp; Alan Seç
           </button>
-          <div className="mt-4 text-xs text-gray-600">30 gün içinde memnun kalmazsan ücret iadesi garantisi 💯</div>
+          <div className="mt-4 text-xs text-gray-600">Bir kez öde, sonsuza kadar kal 🇹🇷</div>
         </div>
       </section>
 
@@ -1495,7 +1489,7 @@ export default function Home() {
               <div className="flex items-center gap-3 mt-3 text-xs text-gray-600">
                 <span>🔒 SSL</span>
                 <span>🛡️ KVKK</span>
-                <span>✅ PayTR</span>
+                <span>💳 Güvenli Ödeme</span>
                 <span>🇹🇷 Türk Girişimi</span>
               </div>
             </div>
