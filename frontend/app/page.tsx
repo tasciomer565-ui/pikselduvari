@@ -1068,7 +1068,7 @@ export default function Home() {
               </TransformWrapper>
             )}
 
-            {/* Seçim paneli — TransformComponent dışında, referans site gibi */}
+            {/* Seçim paneli — sadece desktop, mobilde MobileSelectionSheet var */}
             {!loading && selection && (() => {
               const { x: tx, y: ty, scale } = transformState;
               const sx = selection.x * scale + tx;
@@ -1125,7 +1125,7 @@ export default function Home() {
               const params = new URLSearchParams({ x: String(selection.x), y: String(selection.y), w: String(selection.width), h: String(selection.height) });
 
               return (
-                <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 25 }}>
+                <div className="absolute inset-0 pointer-events-none hidden md:block" style={{ zIndex: 25 }}>
                   <div style={{ position: "absolute", left: panelLeft, top: panelTop, width: panelW, pointerEvents: "auto" }}>
                     {/* Satır 1: boş | ↑ | boş */}
                     <div className="flex gap-[6px] justify-center mb-[6px]">
@@ -1172,8 +1172,9 @@ export default function Home() {
               />
             )}
 
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm text-gray-400 text-xs px-4 py-2 rounded-full border border-gray-700 pointer-events-none">
-              ± butonları → zoom · Sürükle → haritayı kaydır · Tıkla → alan seç · Ok tuşları → alanı genişlet
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm text-gray-400 text-xs px-4 py-2 rounded-full border border-gray-700 pointer-events-none whitespace-nowrap">
+              <span className="hidden md:inline">± zoom · Sürükle → kaydır · Tıkla → alan seç · Oklar → genişlet</span>
+              <span className="md:hidden">Parmakla kaydır · Tıkla → alan seç</span>
             </div>
           </div>
 
@@ -1215,52 +1216,14 @@ export default function Home() {
 
       {/* Social proof bar */}
       <div className="bg-indigo-950/40 border-b border-indigo-900/30 px-6 py-2 flex items-center justify-center gap-4 flex-wrap">
-        <span className="text-indigo-300 text-xs">★★★★★ <strong>50+</strong> memnun müşteri · Türkiye&apos;nin #1 piksel reklam platformu</span>
-        <span className="text-indigo-900 hidden sm:inline">|</span>
         <LiveVisitorCounter />
       </div>
 
-      {/* Live ticker */}
-      <LiveTicker />
-
       {/* Hero section */}
-      <section className="relative px-6 py-20 text-center max-w-4xl mx-auto overflow-hidden">
-        {/* Animated pixel blocks floating */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-          {[
-            { left: "5%", color: "#6366f1", size: 14, delay: "0s", duration: "8s" },
-            { left: "15%", color: "#a855f7", size: 10, delay: "1.2s", duration: "10s" },
-            { left: "30%", color: "#22c55e", size: 8, delay: "0.5s", duration: "7s" },
-            { left: "50%", color: "#f59e0b", size: 12, delay: "2s", duration: "9s" },
-            { left: "70%", color: "#ef4444", size: 10, delay: "0.8s", duration: "11s" },
-            { left: "85%", color: "#06b6d4", size: 14, delay: "1.5s", duration: "8s" },
-            { left: "92%", color: "#6366f1", size: 8, delay: "3s", duration: "12s" },
-          ].map((sq, i) => (
-            <div
-              key={i}
-              className="absolute rounded-sm opacity-20"
-              style={{
-                left: sq.left,
-                width: sq.size,
-                height: sq.size,
-                backgroundColor: sq.color,
-                bottom: "-20px",
-                animation: `floatUp ${sq.duration} ${sq.delay} ease-in-out infinite`,
-              }}
-            />
-          ))}
-          <style>{`
-            @keyframes floatUp {
-              0% { transform: translateY(0) rotate(0deg); opacity: 0.2; }
-              50% { opacity: 0.4; }
-              100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
-            }
-          `}</style>
-        </div>
-
-        {/* Animated gradient bg */}
+      <section className="relative px-6 py-16 text-center max-w-4xl mx-auto overflow-hidden">
+        {/* Gradient bg */}
         <div className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.15) 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.12) 0%, transparent 70%)" }}
         />
 
         <div className="relative z-10">
@@ -1377,8 +1340,6 @@ export default function Home() {
 
       <PixelCalculator onGoToGrid={() => setView("grid")} />
 
-      <Testimonials />
-
       <RegionCards onRegionSelect={handleRegionSelect} />
 
       {/* How it works */}
@@ -1464,8 +1425,6 @@ export default function Home() {
           Tek seferlik ödeme ile sonsuza kadar görünür kalın.
         </p>
       </section>
-
-      <PartnerLogos />
 
       {/* Email toplama */}
       <EmailCapture />
@@ -1591,9 +1550,6 @@ export default function Home() {
         </div>
       </footer>
 
-      <WhatsAppWidget />
-      <SponsorBanner />
-      <TikTokPopup />
     </div>
   );
 }
