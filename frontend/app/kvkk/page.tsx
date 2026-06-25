@@ -21,10 +21,16 @@ export default function KvkkPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">1. Veri Sorumlusu</h2>
             <p>
-              Bu aydınlatma metni, 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") kapsamında
-              Piksel Duvarı ("Şirket") tarafından hazırlanmıştır. Kişisel verileriniz, veri sorumlusu
-              sıfatıyla Piksel Duvarı tarafından işlenecektir.
+              Bu aydınlatma metni, 6698 sayılı Kişisel Verilerin Korunması Kanunu (&quot;KVKK&quot;) kapsamında
+              hazırlanmıştır. Kişisel verileriniz, veri sorumlusu sıfatıyla aşağıda belirtilen kişi tarafından işlenecektir:
             </p>
+            <ul className="list-none pl-0 mt-3 space-y-1 text-sm">
+              <li><strong className="text-white">Ad Soyad:</strong> Ömer Taşcı</li>
+              <li><strong className="text-white">Platform:</strong> Piksel Duvarı (pikselduvari.com)</li>
+              <li><strong className="text-white">Adres:</strong> Eyüpsultan, İstanbul, Türkiye</li>
+              <li><strong className="text-white">E-posta:</strong> <a href="mailto:info@pikselduvari.com" className="text-indigo-400 underline">info@pikselduvari.com</a></li>
+              <li><strong className="text-white">Telefon:</strong> +90 555 166 33 80</li>
+            </ul>
           </section>
 
           <section>

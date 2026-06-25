@@ -48,6 +48,19 @@ export default function HakkimizdaPage() {
           </p>
         </div>
 
+        {/* Kurucu */}
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-8 flex flex-col sm:flex-row items-center gap-6">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-2xl font-extrabold shrink-0">ÖT</div>
+          <div>
+            <div className="text-xs text-indigo-400 font-semibold uppercase tracking-wide mb-1">Kurucu</div>
+            <div className="text-xl font-bold mb-1">Ömer Taşcı</div>
+            <div className="text-gray-400 text-sm mb-2">Eyüpsultan, İstanbul</div>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              Türk işletmelerinin dijital dünyada kalıcı iz bırakabileceği bir platform hayali ile Piksel Duvarı&apos;nı kurdu. &ldquo;Her marka, ne kadar küçük olursa olsun, Türkiye haritasında yerini hak ediyor.&rdquo;
+            </p>
+          </div>
+        </div>
+
         {/* Hikaye */}
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-8">
           <h2 className="text-2xl font-bold mb-5">🚀 Hikayemiz</h2>
@@ -59,7 +72,7 @@ export default function HakkimizdaPage() {
               <strong className="text-white">Türkiye&apos;nin bu hikayeye kendi versiyonu olmalıydı.</strong> Ve Türkiye haritası üzerinde bir piksel duvarı — hem coğrafi hem kültürel olarak çok daha anlamlı bir konsept olurdu.
             </p>
             <p>
-              2025 yılında Piksel Duvarı&apos;nı hayata geçirdik. Amaç basit: Türk işletmelerinin dijital dünyada <strong className="text-white">kalıcı</strong>, <strong className="text-white">ekonomik</strong> ve <strong className="text-white">anlamlı</strong> bir varlık kurmasını sağlamak.
+              2025 yılında İstanbul&apos;dan yola çıkarak Piksel Duvarı&apos;nı hayata geçirdik. Amaç basit: Türk işletmelerinin dijital dünyada <strong className="text-white">kalıcı</strong>, <strong className="text-white">ekonomik</strong> ve <strong className="text-white">anlamlı</strong> bir varlık kurmasını sağlamak.
             </p>
           </div>
         </div>

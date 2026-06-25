@@ -90,9 +90,22 @@ const jsonLdOrg = {
   name: "Piksel Duvarı",
   url: "https://pikselduvari.com",
   logo: "https://pikselduvari.com/icon.png",
+  email: "info@pikselduvari.com",
+  founder: {
+    "@type": "Person",
+    name: "Ömer Taşcı",
+    jobTitle: "Kurucu",
+  },
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Eyüpsultan",
+    addressRegion: "İstanbul",
+    addressCountry: "TR",
+  },
   contactPoint: {
     "@type": "ContactPoint",
     telephone: "+90-555-166-33-80",
+    email: "info@pikselduvari.com",
     contactType: "customer service",
     availableLanguage: "Turkish",
   },

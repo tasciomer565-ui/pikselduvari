@@ -34,6 +34,15 @@ export default function IletisimPage() {
           Sorularınız için bize ulaşın. En kısa sürede yanıt vereceğiz.
         </p>
 
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6 flex items-start gap-4">
+          <div className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center text-xl shrink-0">📍</div>
+          <div>
+            <div className="font-semibold text-sm mb-0.5">Adres</div>
+            <div className="text-gray-400 text-xs">Eyüpsultan, İstanbul, Türkiye</div>
+            <div className="text-gray-500 text-xs mt-1">Ömer Taşcı — Piksel Duvarı</div>
+          </div>
+        </div>
+
         <div className="grid sm:grid-cols-2 gap-6 mb-10">
           <a
             href="mailto:info@pikselduvari.com"
