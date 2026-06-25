@@ -1134,13 +1134,9 @@ export default function Home() {
                     {/* Satır 2: ← | bilgi | → */}
                     <div className="flex gap-[6px] items-center justify-center mb-[6px]">
                       <button style={{ width: BTN, height: INFO_H }} className={arrowBtn} onClick={() => move(-BLOCK, 0)}>←</button>
-                      <div style={{ width: INFO_W, height: INFO_H }} className="bg-white border-2 border-gray-200 rounded-xl flex flex-col items-center justify-center shadow">
+                      <div style={{ width: INFO_W, height: INFO_H }} className="bg-white border-2 border-yellow-400 rounded-xl flex flex-col items-center justify-center shadow">
                         <div className="text-gray-800 font-bold text-sm">{selection.width}×{selection.height}px</div>
-                        <div className="text-green-600 font-bold text-sm">{price} ₺</div>
-                        <div className="flex gap-2 mt-1">
-                          <button className="text-gray-500 hover:text-gray-800 font-bold text-base w-6 h-6 rounded border border-gray-300 flex items-center justify-center" onClick={() => shrink("w")}>−</button>
-                          <button className="text-gray-500 hover:text-gray-800 font-bold text-base w-6 h-6 rounded border border-gray-300 flex items-center justify-center" onClick={() => expand("right")}>+</button>
-                        </div>
+                        <div className="text-green-600 font-bold text-lg">{price} ₺</div>
                       </div>
                       <button style={{ width: BTN, height: INFO_H }} className={arrowBtn} onClick={() => move(BLOCK, 0)}>→</button>
                     </div>

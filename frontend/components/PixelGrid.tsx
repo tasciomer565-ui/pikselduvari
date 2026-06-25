@@ -303,15 +303,16 @@ export default function PixelGrid({ pixels, selection, onSelect, onRegion, selec
         />
       )}
 
-      {/* 6. Seçim — sadece border */}
+      {/* 6. Seçim */}
       {selection && (
         <div
           className="absolute pointer-events-none"
           style={{
-            left: selection.x, top: selection.y,
-            width: selection.width, height: selection.height,
-            border: "2.5px solid #facc15",
-            background: "rgba(250,204,21,0.15)",
+            left: selection.x - 3, top: selection.y - 3,
+            width: selection.width + 6, height: selection.height + 6,
+            border: "4px solid #facc15",
+            background: "rgba(250,204,21,0.25)",
+            boxShadow: "0 0 0 2px rgba(250,204,21,0.6), 0 0 20px rgba(250,204,21,0.4)",
             zIndex: 15,
           }}
         />
